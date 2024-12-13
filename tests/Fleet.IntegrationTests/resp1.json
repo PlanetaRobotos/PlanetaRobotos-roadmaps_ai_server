@@ -1,0 +1,97 @@
+[
+  {
+    "id": "32f071de-2659-4795-9ecc-27fd08540340",
+    "polyline": "es~rHq}|xDIIMMKKKIGCIEMEKCKE]GGA]G{Du@@YJoB?IHeA@SFwA@MBe@Bi@@i@Bs@B{A?G@YHcEN{FHwEDiBTiLBq@R@bFZL@V@H@N@bBLpCTfAHp@FN@~CRl@DN@x@DHAH?DAJG@AJILOZ[~@cAFIJMPONSHa@Hc@Jy@J}@Fo@TgCD_@De@PsB~@{K@EVwBJeANyAd@cF^wDH}@BQLuAd@iFBUTFHBzAd@dAXl@PvF`Bh@RNDt@TlAZh@PF@~@ZbBh@`Bf@`AZJDdAXJDVFbAZJRBN@H@H?RATAZC`@Cf@APCN?JCHAJCHCFGHGDCBGBG@G@GAEAECECEIEIEKCOI_@Fw@LeAZeDPmAJs@@MBm@d@aEFg@Fg@l@oGd@oGz@sJBWj@oFBYH}@Hy@t@kHDg@XeD@mAX_CjAyNJ}@rAyOD_@Dg@hDe_@j@oGj@_GJoAJ{@xAwODi@De@Fw@Fy@RiBPkBHu@LmA|@sKHo@f@mFTcCJqAVeDDB^L~@R~AVJLFHHBLDFADCDEBEDM@G@E@G@G@G?GGw@BkE?sA?sABCBGBIBKDIDELGLEPERMNIb@g@d@m@`@k@`@k@jCsE@Cp@m@d@m@fB{Cv@sAvBkDz@kAhEuFpBiCjBcCpC}Dj@s@pFeH~@mAZc@pBiCZa@\\a@Zc@tAeBvJuMxBkCLSPWR_@LULUNOZa@Za@\\a@NUj@{@n@}@X_@pEkFb@g@b@e@JIHGHKNKTO|D{Bj@]n@s@zBgDNb@Zr@lAvC@BPb@ONEFGLG^?DG~@Ax@?Z?V?D@P@b@?@?JN|E@F?N@LBL@D?@FJFDHF|@p@JLFH@H@F@HAJAH`Ah@lBdA~@h@nC|AnAr@qA`IYfBuBxMmArHG\\QtAI|BAjA?|@?\\@n@Bt@@h@BV?FBVF\\Hd@Jh@Lv@~@jFdAnGj@bD\\tBDTLp@Nv@L~@RfAHh@Hb@gDdBIFkE`C]RcJ`F[P_@Ta@TYPEBa@Ta@R_@Ta@TIDWL_@Ta@Ra@Ra@ROH{BlAmBbAeAh@mAn@mCzAa@RUHGBIBG@IBI?O?M?uA?_@?c@?c@?c@Ac@?c@?oFEyCC@wBAcA@bAAvBU?a@?Y@I?yC@c@@K?W@c@@c@@[@kAK]@kGBS@cJDc@?qB?c@?OAMCOGOKKM[g@Wq@K]GUGS_@mAeAyCqAeDM_@e@aBEEEEECEEECGCEAEACCEACACACACACAEA_@@_BW_AS_@MEC}@[eA[QE_@IgAUi@MiAYUE_B_@YGUEcBc@_Du@UGm@MYG[IEAc@Ic@Ig@O]Gk@O]K]KEAm@Wk@Y]SGEKI_@Y_@Ye@e@IId@eB@AZeAzB}HFMHIdCyBxAfB`BxA`AhA\\^\\`@vA~ANe@Pm@Ro@DMLe@N_@PYR[@ARY@A`@k@BCV]\\g@",
+    "estimated": {
+      "startTime": "2024-09-14T08:00:00Z",
+      "endTime": "2024-09-14T08:35:34Z",
+      "travelDistanceMeters": 15381,
+      "duration": "00:35:34",
+      "detourDuration": "00:00:00",
+      "visitDuration": "00:00:00"
+    },
+    "vehicle": {
+      "id": "d1f34e35-f0ca-4796-a8b4-88bdb99132d0",
+      "name": "Vehicle BMW",
+      "phoneNumber": "00923132132",
+      "type": "Car",
+      "appVersion": "0.0.0-demo",
+      "speedLimit": 0,
+      "stationaryLimit": 0,
+      "lastSyncLocation": null,
+      "lastSyncTime": null,
+      "zones": null,
+      "startDepot": {
+        "id": "30f34e35-aaaa-4796-a8b4-88bdb99132d0",
+        "name": "Depot Center",
+        "description": "",
+        "address": "123 Main St",
+        "location": {
+          "latitude": 50.46110939091674,
+          "longitude": 30.463151372053982
+        }
+      },
+      "endDepot": {
+        "id": "30f34e35-aaaa-4796-a8b4-88bdb99132d1",
+        "name": "Depot North",
+        "description": "",
+        "address": "456 North St",
+        "location": {
+          "latitude": 50.44432863721969,
+          "longitude": 30.526160413443996
+        }
+      }
+    },
+    "jobs": [
+      {
+        "job": null,
+        "transition": {
+          "type": "Departure",
+          "estimatedDuration": "00:20:43",
+          "estimatedDetourDuration": null,
+          "estimatedStartTime": "2024-09-14T08:00:00Z",
+          "estimatedDistanceMeters": 9638
+        }
+      },
+      {
+        "job": {
+          "id": "00ae433e-f36b-1410-8e69-00b159593ea3",
+          "created": "2024-09-13T14:33:36.3145608Z",
+          "type": "Collection",
+          "vehicleId": null,
+          "zoneId": null,
+          "depotId": null,
+          "doNumber": "00001555",
+          "deliveryDate": "2024-09-14T12:00:00Z",
+          "address": "Integral Fitness Studio",
+          "location": {
+            "latitude": 50.41948536590367,
+            "longitude": 30.53784533126539
+          },
+          "fields": null
+        },
+        "transition": null
+      },
+      {
+        "job": null,
+        "transition": {
+          "type": "Travel",
+          "estimatedDuration": "00:20:43",
+          "estimatedDetourDuration": null,
+          "estimatedStartTime": "2024-09-14T08:00:00Z",
+          "estimatedDistanceMeters": 9638
+        }
+      },
+      {
+        "job": null,
+        "transition": {
+          "type": "Arrival",
+          "estimatedDuration": "00:06:24",
+          "estimatedDetourDuration": null,
+          "estimatedStartTime": "2024-09-14T08:20:43Z",
+          "estimatedDistanceMeters": 2792
+        }
+      }
+    ]
+  }
+]

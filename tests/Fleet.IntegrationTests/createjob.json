@@ -1,0 +1,32 @@
+{
+  "created": "2024-09-14T15:00:00.000Z",
+  "type": "Collection",
+  "vehicleId": null,
+  "zoneId": null,
+  "depotId": null,
+  "doNumber": "00001111",
+  "deliveryDate": "2024-09-14T12:00:00.000Z",
+  "address": "Integral Fitness Studio",
+  "location": {
+    "latitude": 50.41948536590367, 
+    "longitude": 30.53784533126539
+  },
+  "fields": {
+    "companyName": "Integral Fitness Studio",
+    "date": "",
+    "deliverToCollectFrom": "",
+    "group": "",
+    "jobSequence": "",
+    "jobStatus": "",
+    "paymentAmount": "",
+    "paymentMode": "",
+    "reason": "",
+    "receivedBy": "",
+    "runNumber": "",
+    "sku": "",
+    "trackingNumber": "",
+    "trackingStatus": "",
+    "weight": "",
+    "zone": ""
+  }
+} 
