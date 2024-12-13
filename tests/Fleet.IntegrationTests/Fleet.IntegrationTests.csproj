@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Fleet.Api\Fleet.Api.csproj" />
+    <ProjectReference Include="..\..\src\CourseAI.Api\CourseAI.Api.csproj" />
   </ItemGroup>
 
 </Project>
