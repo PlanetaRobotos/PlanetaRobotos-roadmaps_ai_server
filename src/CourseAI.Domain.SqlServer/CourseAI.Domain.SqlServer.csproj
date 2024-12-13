@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>CourseAI.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster.EFCore" Version="5.1.1"/>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.7"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2"/>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.0"/>
+    <PackageReference Include="NeerCore.Data.EntityFramework" Version="2.0.1"/>
+    <PackageReference Include="Sieve" Version="2.5.5"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CourseAI.Core\CourseAI.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="Assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(RecursiveDir)\Assets\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
+</Project>
