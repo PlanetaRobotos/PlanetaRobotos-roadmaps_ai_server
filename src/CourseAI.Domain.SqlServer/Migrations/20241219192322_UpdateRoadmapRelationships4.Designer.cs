@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseAI.Domain.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241213100732_UpdateRoadmapRelationships")]
-    partial class UpdateRoadmapRelationships
+    [Migration("20241219192322_UpdateRoadmapRelationships4")]
+    partial class UpdateRoadmapRelationships4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -201,6 +201,9 @@ namespace CourseAI.Domain.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<Guid>("UserRoadmapId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -218,18 +221,19 @@ namespace CourseAI.Domain.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a05836a5-b281-4a9b-8df8-b8518b4ad368",
+                            ConcurrencyStamp = "a5231cb4-2e31-41c3-ac40-5fbf97fa31d8",
                             Created = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@mrCourseAI.dev",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@MRCourseAI.DEV",
                             NormalizedUserName = "ARKODE",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAOvLNSQj411JlG5/BuOhG8kwfNei2zzn7aqhbdLGPSsNBQc3drn/Pyw7ubcepLdxg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECLDuU/xVx3tico56wKCsfrLgmD/N5gJh/qVFH4rc/OEKuqG7HFWn2c1LZmv7gLZsQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "96b575f3-bb1b-4527-8303-9219aefe8407",
+                            SecurityStamp = "290234b7-9ff0-4d54-8e0b-49fe3a5f89dd",
                             TwoFactorEnabled = false,
-                            UserName = "arkode"
+                            UserName = "arkode",
+                            UserRoadmapId = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
 
@@ -337,47 +341,6 @@ namespace CourseAI.Domain.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmap", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("SYSUTCDATETIME()");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("EstimatedDuration")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Tags")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Topic")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("Updated")
-                        .ValueGeneratedOnUpdate()
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Title");
-
-                    b.ToTable("Roadmaps", (string)null);
-                });
-
             modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Lesson", b =>
                 {
                     b.Property<Guid>("Id")
@@ -422,6 +385,85 @@ namespace CourseAI.Domain.Migrations
                     b.ToTable("Lessons", (string)null);
                 });
 
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Quiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Answers")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CorrectAnswerIndex")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("Quizzes", (string)null);
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Roadmap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("EstimatedDuration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Topic")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title");
+
+                    b.ToTable("Roadmaps", (string)null);
+                });
+
             modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.RoadmapModule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -456,21 +498,37 @@ namespace CourseAI.Domain.Migrations
                     b.ToTable("RoadmapModules", (string)null);
                 });
 
+            modelBuilder.Entity("CourseAI.Domain.Entities.UserQuiz", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AnswerIndex")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "QuizId");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("UserQuizes", (string)null);
+                });
+
             modelBuilder.Entity("CourseAI.Domain.Entities.UserRoadmap", b =>
                 {
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.Property<Guid>("RoadmapId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId", "RoadmapId");
 
                     b.HasIndex("RoadmapId");
 
-                    b.ToTable("UserRoadmaps");
+                    b.ToTable("UserRoadmaps", (string)null);
                 });
 
             modelBuilder.Entity("CourseAI.Domain.Entities.Identity.RoleClaim", b =>
@@ -546,9 +604,20 @@ namespace CourseAI.Domain.Migrations
                     b.Navigation("RoadmapModule");
                 });
 
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Quiz", b =>
+                {
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Lesson", "Lesson")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
             modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.RoadmapModule", b =>
                 {
-                    b.HasOne("CourseAI.Domain.Entities.Roadmap", "Roadmap")
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Roadmap", "Roadmap")
                         .WithMany("Modules")
                         .HasForeignKey("RoadmapId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -557,9 +626,28 @@ namespace CourseAI.Domain.Migrations
                     b.Navigation("Roadmap");
                 });
 
+            modelBuilder.Entity("CourseAI.Domain.Entities.UserQuiz", b =>
+                {
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Quiz", "Quiz")
+                        .WithMany("UserQuizzes")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CourseAI.Domain.Entities.Identity.User", "User")
+                        .WithMany("UserQuizzes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CourseAI.Domain.Entities.UserRoadmap", b =>
                 {
-                    b.HasOne("CourseAI.Domain.Entities.Roadmap", "Roadmap")
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Roadmap", "Roadmap")
                         .WithMany("UserRoadmaps")
                         .HasForeignKey("RoadmapId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -580,10 +668,22 @@ namespace CourseAI.Domain.Migrations
                 {
                     b.Navigation("TableSettings");
 
+                    b.Navigation("UserQuizzes");
+
                     b.Navigation("UserRoadmaps");
                 });
 
-            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmap", b =>
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Lesson", b =>
+                {
+                    b.Navigation("Quizzes");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Quiz", b =>
+                {
+                    b.Navigation("UserQuizzes");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Roadmap", b =>
                 {
                     b.Navigation("Modules");
 

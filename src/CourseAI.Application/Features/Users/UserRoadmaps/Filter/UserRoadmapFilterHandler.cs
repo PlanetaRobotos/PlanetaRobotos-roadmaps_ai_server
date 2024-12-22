@@ -14,8 +14,8 @@ public class UserRoadmapFilterHandler(AppDbContext dbContext) : IHandler<UserRoa
     public async ValueTask<OneOf<Filtered<UserRoadmapModel>, Error>> Handle(UserRoadmapFilterRequest request, CancellationToken ct)
     {
         var UserRoadmaps = await dbContext.UserRoadmaps
-            // .Include(ur => ur.Roadmap)
             .Where(ur => ur.UserId == request.UserId)
+            .Include(ur => ur.Roadmap)
             .ToArrayAsync(ct);
         
         return new Filtered<UserRoadmapModel>

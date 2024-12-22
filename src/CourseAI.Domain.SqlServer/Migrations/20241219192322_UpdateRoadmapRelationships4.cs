@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CourseAI.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateRoadmapRelationships : Migration
+    public partial class UpdateRoadmapRelationships4 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -71,6 +71,7 @@ namespace CourseAI.Domain.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
                     Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserRoadmapId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -180,7 +181,7 @@ namespace CourseAI.Domain.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<long>(type: "bigint", nullable: false),
-                    RoadmapId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()")
+                    RoadmapId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -287,6 +288,54 @@ namespace CourseAI.Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Quizzes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    Question = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Answers = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CorrectAnswerIndex = table.Column<int>(type: "int", nullable: false),
+                    LessonId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Updated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "SYSUTCDATETIME()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Quizzes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Quizzes_Lessons_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lessons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserQuizes",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    QuizId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnswerIndex = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserQuizes", x => new { x.UserId, x.QuizId });
+                    table.ForeignKey(
+                        name: "FK_UserQuizes_Quizzes_QuizId",
+                        column: x => x.QuizId,
+                        principalTable: "Quizzes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserQuizes_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -299,8 +348,8 @@ namespace CourseAI.Domain.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1L, 0, "a05836a5-b281-4a9b-8df8-b8518b4ad368", "admin@mrCourseAI.dev", true, false, null, "ADMIN@MRCourseAI.DEV", "ARKODE", "AQAAAAIAAYagAAAAEAOvLNSQj411JlG5/BuOhG8kwfNei2zzn7aqhbdLGPSsNBQc3drn/Pyw7ubcepLdxg==", null, false, "96b575f3-bb1b-4527-8303-9219aefe8407", false, "arkode" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName", "UserRoadmapId" },
+                values: new object[] { 1L, 0, "a5231cb4-2e31-41c3-ac40-5fbf97fa31d8", "admin@mrCourseAI.dev", true, false, null, "ADMIN@MRCourseAI.DEV", "ARKODE", "AQAAAAIAAYagAAAAECLDuU/xVx3tico56wKCsfrLgmD/N5gJh/qVFH4rc/OEKuqG7HFWn2c1LZmv7gLZsQ==", null, false, "290234b7-9ff0-4d54-8e0b-49fe3a5f89dd", false, "arkode", new Guid("00000000-0000-0000-0000-000000000000") });
 
             migrationBuilder.InsertData(
                 table: "UserRoles",
@@ -311,6 +360,11 @@ namespace CourseAI.Domain.Migrations
                 name: "IX_Lessons_ModuleId",
                 table: "Lessons",
                 column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Quizzes_LessonId",
+                table: "Quizzes",
+                column: "LessonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoadmapModules_RoadmapId",
@@ -345,6 +399,11 @@ namespace CourseAI.Domain.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserQuizes_QuizId",
+                table: "UserQuizes",
+                column: "QuizId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRoadmaps_RoadmapId",
                 table: "UserRoadmaps",
                 column: "RoadmapId");
@@ -371,9 +430,6 @@ namespace CourseAI.Domain.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Lessons");
-
-            migrationBuilder.DropTable(
                 name: "Resources");
 
             migrationBuilder.DropTable(
@@ -384,6 +440,9 @@ namespace CourseAI.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserLogins");
+
+            migrationBuilder.DropTable(
+                name: "UserQuizes");
 
             migrationBuilder.DropTable(
                 name: "UserRoadmaps");
@@ -398,13 +457,19 @@ namespace CourseAI.Domain.Migrations
                 name: "UserTokens");
 
             migrationBuilder.DropTable(
-                name: "RoadmapModules");
+                name: "Quizzes");
 
             migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Lessons");
+
+            migrationBuilder.DropTable(
+                name: "RoadmapModules");
 
             migrationBuilder.DropTable(
                 name: "Roadmaps");

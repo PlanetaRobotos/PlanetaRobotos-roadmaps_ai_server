@@ -26,12 +26,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Roadmap> Roadmaps { get; init; }
     public DbSet<RoadmapModule> RoadmapModules { get; init; }
     public DbSet<Lesson> Lessons { get; init; }
+    public DbSet<Quiz> Quizzes { get; init; }
     
     public DbSet<UserRoadmap> UserRoadmaps { get; init; } 
-
+    public DbSet<UserQuiz> UserQuizzes { get; set; }
+    public DbSet<UserLike> UserLikes { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        
         builder.ConfigureEntities(config =>
         {
             config.EngineStrategy = DbEngineStrategy.SqlServer;

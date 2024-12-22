@@ -20,7 +20,7 @@ public class JwtOptions
             config.Bind(options);
 
             var stringToken = config.GetValue<string>("AccessToken:Secret")!;
-            options.AccessToken.Secret = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(stringToken));
+            options.AccessToken.Secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(stringToken));
         }
     }
 }

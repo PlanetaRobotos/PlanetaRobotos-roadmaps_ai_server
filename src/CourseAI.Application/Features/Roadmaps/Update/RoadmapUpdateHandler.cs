@@ -16,6 +16,7 @@ public class RoadmapUpdateHandler(AppDbContext dbContext) : IHandler<RoadmapUpda
         var roadmap = await dbContext.Roadmaps
             .Include(r => r.Modules)
             .ThenInclude(m => m.Lessons) // Ensure steps are loaded
+            .ThenInclude(l => l.Quizzes)
             .FirstOrDefaultAsync(r => r.Id == request.Id, ct);
 
         if (roadmap is null)
@@ -54,6 +55,11 @@ public class RoadmapUpdateHandler(AppDbContext dbContext) : IHandler<RoadmapUpda
 
             // Update step completion status
             step.Completed = request.LessonCompleted.Value;
+        }
+        
+        if (request.Likes.HasValue && request.Likes != roadmap.Likes)
+        {
+            roadmap.Likes = request.Likes.Value;
         }
 
         await dbContext.SaveChangesAsync(ct);
