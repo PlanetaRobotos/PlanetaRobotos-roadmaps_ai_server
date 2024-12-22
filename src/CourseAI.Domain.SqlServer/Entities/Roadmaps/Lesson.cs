@@ -18,6 +18,8 @@ public class Lesson : IDateableEntity<Guid>
     
     public string? Description { get; set; }
     public LessonContent? Content { get; set; }
+    public List<Quiz>? Quizzes { get; set; }
+
     public DateTime? Updated { get; }
     public DateTime Created { get; }
     
@@ -32,17 +34,23 @@ public class Lesson : IDateableEntity<Guid>
             builder.Property(e => e.Order).IsRequired();
             
             builder.Property(e => e.Description).HasMaxLength(StringLimits._1000);
+            
+            builder.HasMany(e => e.Quizzes)
+                .WithOne(q => q.Lesson)
+                .HasForeignKey(q => q.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.RoadmapModule)
+                .WithMany(m => m.Lessons)
+                .HasForeignKey(e => e.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.Property(e => e.Content)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, new JsonSerializerOptions { WriteIndented = false }),
                     v => JsonSerializer.Deserialize<LessonContent>(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 )
                 .HasColumnType("nvarchar(max)");
-            
-            builder.HasOne(e => e.RoadmapModule)
-                .WithMany(m => m.Lessons)
-                .HasForeignKey(e => e.ModuleId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,6 +1,7 @@
 using CourseAI.Application.Extensions;
 using CourseAI.Application.Options;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,7 +17,7 @@ public static class JwtAuthenticationExtensions
             {
                 authOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 authOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                authOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                // authOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(jwt =>
             {
@@ -24,17 +25,13 @@ public static class JwtAuthenticationExtensions
 
                 jwt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    // Issuer
                     ValidateIssuer = options.Issuer is not null,
                     ValidIssuer = options.Issuer,
-                    // Audience
                     ValidateAudience = options.Audiences is not null,
                     ValidAudiences = options.Audiences,
-                    // Secret
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = options.Secret,
-                    // Lifetime
-                    ValidateLifetime = true,
+                    // ValidateLifetime = true,
                     // Allowed lifetime extra
                     ClockSkew = options.ClockSkew == TimeSpan.Zero
                         ? TimeSpan.FromMinutes(5)

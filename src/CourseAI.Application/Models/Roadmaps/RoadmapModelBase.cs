@@ -21,6 +21,10 @@ public abstract class RoadmapModelBase
 
     /// <example>["coding", "python", "beginner"]</example>
     public string[]? Tags { get; set; }
+    
+
+    /// <example>0</example>
+    public int? Likes { get; set; }
 
     public IList<RoadmapModuleModel> Modules { get; set; } = new List<RoadmapModuleModel>();
 
@@ -32,6 +36,7 @@ public abstract class RoadmapModelBase
     {
         validator.RuleFor(x => x.EstimatedDuration).GreaterThan(0).WithMessage("Estimated duration must be greater than 0.");
         validator.RuleFor(x => x.Description).MaximumLength(StringLimits._1000).WithMessage("Description is too long.");
+        validator.RuleFor(x => x.Likes).GreaterThanOrEqualTo(0).WithMessage("Likes must be greater than or equal to 0.");
     }
 
     public Roadmap ToEntity() =>
@@ -43,6 +48,7 @@ public abstract class RoadmapModelBase
             EstimatedDuration = EstimatedDuration ?? 0,
             Description = Description,
             Tags = Tags,
+            Likes = Likes,
             Created = DateTime.UtcNow,
             Modules = Modules.Select(module => module.ToEntity()).ToList()
         };

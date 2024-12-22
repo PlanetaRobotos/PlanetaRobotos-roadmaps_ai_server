@@ -2,37 +2,34 @@
 using CourseAI.Domain.Entities.Roadmaps;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NeerCore.Data.Abstractions;
 
 namespace CourseAI.Domain.Entities;
 
-public class UserRoadmap
+public class UserRoadmap : IEntity
 {
     public long UserId { get; init; }
     public Guid RoadmapId { get; init; }
+    public bool IsLiked { get; set; }
     
-    public User User { get; init; }
-    public Roadmap Roadmap { get; init; }
+    public User? User { get; init; }
+    public Roadmap? Roadmap { get; init; }
+    
+    // public ICollection<UserQuiz> UserQuizzes { get; set; }
 
     internal class Configuration : IEntityTypeConfiguration<UserRoadmap>
     {
         public void Configure(EntityTypeBuilder<UserRoadmap> builder)
         {
-            builder.HasKey(e => new { e.UserId, e.RoadmapId });
+            builder.ToTable($"{nameof(UserRoadmap)}s").HasKey(e => new { e.UserId, e.RoadmapId });
 
-            builder.Property(e => e.UserId).ValueGeneratedNever(); // No default value
-            builder.Property(e => e.RoadmapId).HasDefaultValueSql("NEWID()");
-            
-            // Relationship with User
             builder.HasOne(e => e.User)
                 .WithMany(u => u.UserRoadmaps)
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.UserId);
 
-            // Relationship with Roadmap
             builder.HasOne(e => e.Roadmap)
                 .WithMany(r => r.UserRoadmaps)
-                .HasForeignKey(e => e.RoadmapId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.RoadmapId);
         }
     }
 }

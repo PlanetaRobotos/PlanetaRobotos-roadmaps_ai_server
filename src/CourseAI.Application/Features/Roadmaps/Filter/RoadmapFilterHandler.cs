@@ -13,7 +13,11 @@ public class RoadmapFilterHandler(AppDbContext dbContext) : IHandler<RoadmapFilt
 {
     public async ValueTask<OneOf<Filtered<RoadmapModel>, Error>> Handle(RoadmapFilterRequest request, CancellationToken ct)
     {
-        var roadmaps = await dbContext.Roadmaps.ToArrayAsync(ct);
+        var roadmaps = await dbContext.Roadmaps
+            .Include(x => x.Modules)
+            .ThenInclude(x => x.Lessons)
+            .ThenInclude(x => x.Quizzes)
+            .ToArrayAsync(ct);
 
         return new Filtered<RoadmapModel>
         {

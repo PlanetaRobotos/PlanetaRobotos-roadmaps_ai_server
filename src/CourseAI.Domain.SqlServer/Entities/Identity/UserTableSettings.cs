@@ -13,8 +13,7 @@ public class UserTableSettings : IEntity
     public long UserId { get; set; }
     public TableSettingsName TableName { get; set; }
     public string[] Columns { get; set; } = null!;
-
-
+    
     public User? User { get; set; }
 
 

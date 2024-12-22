@@ -17,6 +17,7 @@ public class RoadmapGetByIdHandler(AppDbContext dbContext) : IHandler<RoadmapGet
         var Roadmap = await dbContext.Roadmaps
             .Include(e => e.Modules)
             .ThenInclude(m => m.Lessons)
+            .ThenInclude(l => l.Quizzes)
             .Where(e => e.Id == request.Id)
             .FirstOrDefaultAsync(ct);
 

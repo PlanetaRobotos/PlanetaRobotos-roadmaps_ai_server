@@ -3,7 +3,7 @@ using CourseAI.Api.Core;
 using CourseAI.Api.Core.ModelBinding;
 using CourseAI.Api.Middlewares;
 using CourseAI.Api.Swagger;
-using CourseAI.Api.Swagger.Extensions;
+// using CourseAI.Api.Swagger.Extensions;
 using CourseAI.Core.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -34,14 +34,15 @@ public static class DependencyInjection
         });
 
         services.AddCors(cors => cors.AddPolicy("AcceptAll", builder =>
-            builder.AllowAnyOrigin()
+            builder.WithOrigins("http://localhost:3000")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
+                .AllowCredentials()
         ));
 
         services.AddProblemDetails();
         services.AddCustomApiVersioning();
-        services.AddCustomSwagger();
+        // services.AddCustomSwagger();
     }
 
     private static void AddCustomApiVersioning(this IServiceCollection services)
