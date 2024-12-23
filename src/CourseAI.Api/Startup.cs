@@ -25,6 +25,8 @@ internal static class Startup
 {
     public static void ConfigureBuilder(WebApplicationBuilder builder)
     {
+        builder.Logging.AddConsole();
+        
         builder.Services.AddApplicationInsightsTelemetry();
         // builder.Services.AddSwaggerGenWithAuth();
         builder.Services.AddCustomSwagger();

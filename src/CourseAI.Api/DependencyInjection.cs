@@ -28,13 +28,14 @@ public static class DependencyInjection
             options.JsonSerializerOptions.Converters.Add(new CustomJsonStringEnumConverter());
         });
 
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.SuppressModelStateInvalidFilter = true;
-        });
+        services.Configure<ApiBehaviorOptions>(options => { options.SuppressModelStateInvalidFilter = true; });
 
         services.AddCors(cors => cors.AddPolicy("AcceptAll", builder =>
-            builder.WithOrigins("http://localhost:3000")
+            builder.WithOrigins(
+                    "http://localhost:3000",
+                    "https://testroadmapai.vercel.app",
+                    "https://www.levenue.tech/"
+                )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
