@@ -31,11 +31,9 @@ internal static class Startup
         // builder.Services.AddSwaggerGenWithAuth();
         builder.Services.AddCustomSwagger();
 
-        // builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true);
+        builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true);
         builder.Host.UseSerilog();
-
-        builder.Services.AddDomain();
-
+        
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         builder.Services.AddScoped<IUrlHelper>(sp =>
@@ -45,6 +43,7 @@ internal static class Startup
             return factory.GetUrlHelper(actionContext);
         });
 
+        builder.Services.AddDomain();
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure();
         builder.Services.AddWebApi();

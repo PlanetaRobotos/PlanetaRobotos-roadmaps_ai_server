@@ -21,7 +21,8 @@ try
     logger.Debug("[startup] Running web application..");
     Startup.ConfigureWebApp(app);
 
-    app.Run(isProduction ? $"http://0.0.0.0:{port}" : null);
+    // app.Run(isProduction ? $"http://0.0.0.0:{port}" : null);
+    app.Run();
 }
 catch (Exception e)
 {
