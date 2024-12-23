@@ -31,7 +31,7 @@ internal static class Startup
         // builder.Services.AddSwaggerGenWithAuth();
         builder.Services.AddCustomSwagger();
 
-        builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: false);
+        builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true);
         builder.Host.UseSerilog();
 
         builder.Services.AddDomain();
