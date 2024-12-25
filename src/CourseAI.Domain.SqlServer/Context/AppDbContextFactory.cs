@@ -37,8 +37,7 @@ namespace CourseAI.Domain.Context
                 if (Configuration is null)
                     return base.ConnectionString;
 
-                return Configuration.GetConnectionString(SelectedConnectionName)
-                       ?? throw new KeyNotFoundException("Connection string 'Default' not found in configuration.");
+                return Environment.GetEnvironmentVariable("ConnectionStrings__Default") ?? Configuration.GetConnectionString(SelectedConnectionName);
             }
         }
 

@@ -152,6 +152,6 @@ internal static class Startup
         // });
         app.MapControllers();
 
-        // app.MapGet("/", () => "OK");
+        app.MapGet("/", () => "OK");
     }
 }

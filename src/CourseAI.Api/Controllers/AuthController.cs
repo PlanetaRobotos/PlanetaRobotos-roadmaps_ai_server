@@ -53,7 +53,7 @@ public class AuthController : V1Controller
                     Path = "/"
                 });*/
 
-                return Redirect($"{returnUrl}/callback?token={token}");
+                return Redirect($"{returnUrl}?token={token}");
             });
     }
     
