@@ -22,6 +22,7 @@ public abstract class RoadmapModelBase
     /// <example>["coding", "python", "beginner"]</example>
     public string[]? Tags { get; set; }
     
+    public long? AuthorId { get; set; }
 
     /// <example>0</example>
     public int? Likes { get; set; }
@@ -50,6 +51,7 @@ public abstract class RoadmapModelBase
             Tags = Tags,
             Likes = Likes,
             Created = DateTime.UtcNow,
-            Modules = Modules.Select(module => module.ToEntity()).ToList()
+            Modules = Modules.Select(module => module.ToEntity()).ToList(),
+            AuthorId = AuthorId
         };
 }

@@ -4,6 +4,7 @@ using CourseAI.Domain.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseAI.Domain.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241227122215_authorid")]
+    partial class authorid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,16 +221,16 @@ namespace CourseAI.Domain.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1d4befea-077b-40f5-a5e2-8c1952af9041",
+                            ConcurrencyStamp = "05b18cd1-3eec-44c9-b7e2-cd26ca7625e8",
                             Created = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@mrCourseAI.dev",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@MRCourseAI.DEV",
                             NormalizedUserName = "ARKODE",
-                            PasswordHash = "AQAAAAIAAYagAAAAED3cWfIc1HQYYfjnXZNdd20gfWK6UV2e14wdbWRJK0k8V5tbmbn0RQxjjmSN1ihnMQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGU6efQVsL34O7CD7WZzSB1CQRpY+I24hsNh/8wc0cRQaDqubsQ1a5TN8tkvaY3iVw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "203b0d8e-790f-4cf5-85a1-35478bd30371",
+                            SecurityStamp = "567790e0-bc9e-44ce-b21a-270eae406982",
                             TwoFactorEnabled = false,
                             UserName = "arkode",
                             UserRoadmapId = new Guid("00000000-0000-0000-0000-000000000000")
@@ -427,7 +430,7 @@ namespace CourseAI.Domain.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<long?>("AuthorId")
+                    b.Property<long>("AuthorId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("Created")

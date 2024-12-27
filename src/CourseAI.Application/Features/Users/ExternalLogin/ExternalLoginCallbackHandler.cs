@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using CourseAI.Application.Core;
 using CourseAI.Application.Models;
 using CourseAI.Application.Services;
@@ -26,8 +27,11 @@ namespace CourseAI.Application.Features.Users.ExternalLogin
                 }
 
                 var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
-                var fullName = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
+                var name = authenticateResult.Principal.FindFirst(ClaimTypes.GivenName)?.Value;
                 var profilePicture = authenticateResult.Principal.FindFirst("picture")?.Value;
+                
+                if (string.IsNullOrEmpty(name) || !Regex.IsMatch(name, @"^[a-zA-Z0-9]+$")) 
+                    name = Regex.Replace(name ?? string.Empty, @"[^a-zA-Z0-9]", string.Empty);
 
                 if (email == null)
                     Error.ServerError($"Email claim not found.");
@@ -35,10 +39,9 @@ namespace CourseAI.Application.Features.Users.ExternalLogin
                 var user = await userManager.FindByEmailAsync(email);
                 if (user == null)
                 {
-                    // Create a new user
                     user = new User
                     {
-                        UserName = email,
+                        UserName = name,
                         Email = email,
                         EmailConfirmed = true,
                         // NormalizedUserName = fullName

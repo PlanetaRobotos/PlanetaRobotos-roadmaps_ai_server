@@ -26,14 +26,14 @@ internal static class Startup
     public static void ConfigureBuilder(WebApplicationBuilder builder)
     {
         builder.Logging.AddConsole();
-        
+
         builder.Services.AddApplicationInsightsTelemetry();
         // builder.Services.AddSwaggerGenWithAuth();
         builder.Services.AddCustomSwagger();
 
         builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true);
         builder.Host.UseSerilog();
-        
+
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         builder.Services.AddScoped<IUrlHelper>(sp =>
@@ -49,7 +49,7 @@ internal static class Startup
         builder.Services.AddWebApi();
 
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
-        
+
         builder.Services.AddAuthorization();
         builder.Services
             .AddAuthentication(options =>
@@ -152,6 +152,9 @@ internal static class Startup
         // });
         app.MapControllers();
 
-        app.MapGet("/", () => "OK");
+        if (app.Environment.IsProduction())
+        {
+            app.MapGet("/", () => "OK");
+        }
     }
 }

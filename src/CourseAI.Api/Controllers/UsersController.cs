@@ -50,7 +50,6 @@ public class UsersController(UserManager<User> userManager) : V1Controller
     }
 
     [HttpGet("{id:long}")]
-    [Authorize]
     [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
     public async Task<ActionResult<UserModel>> Get(long id)
     {

@@ -1,5 +1,3 @@
-// Application/Features/Users/ExternalLogin/InitiateGoogleLoginHandler.cs
-
 using System.Threading;
 using System.Threading.Tasks;
 using CourseAI.Application.Core;
