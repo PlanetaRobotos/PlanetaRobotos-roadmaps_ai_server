@@ -10,7 +10,12 @@ public static class DependencyInjection
 {
     public static void AddInfrastructure(this IServiceCollection services)
     {
-        services.AddHttpClient();
+        services.AddHttpClient(
+            "Google", client =>
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+            });
+        ;
 
         // services.AddHttpClient<IAiContentGenerator, OpenAiContentGenerator>(client =>
         // {

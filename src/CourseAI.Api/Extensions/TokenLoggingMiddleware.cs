@@ -20,7 +20,7 @@ public class TokenLoggingMiddleware
         }
         else
         {
-            _logger.LogWarning("Authorization Header not found.");
+            _logger.LogWarning($"Authorization Header not found. {context.Request.Path}");
         }
 
         await _next(context);

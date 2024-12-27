@@ -34,11 +34,15 @@ namespace CourseAI.Application.Features.Users.ExternalLogin
                     name = Regex.Replace(name ?? string.Empty, @"[^a-zA-Z0-9]", string.Empty);
 
                 if (email == null)
-                    Error.ServerError($"Email claim not found.");
+                    Error.ServerError($"Email claim not found. {authenticateResult.Principal.Claims}");
+
+                Error.ServerError($"{email} {name}");
 
                 var user = await userManager.FindByEmailAsync(email);
                 if (user == null)
                 {
+                    Error.ServerError($"User not found {email}");
+
                     user = new User
                     {
                         UserName = name,
@@ -49,7 +53,7 @@ namespace CourseAI.Application.Features.Users.ExternalLogin
                     var identityResult = await userManager.CreateAsync(user);
                     if (!identityResult.Succeeded)
                     {
-                        Error.ServerError($"{identityResult.Errors}");
+                        Error.ServerError($"identityResult Failed: {identityResult.Errors}");
                     }
                 }
 
@@ -59,7 +63,7 @@ namespace CourseAI.Application.Features.Users.ExternalLogin
             }
             catch (Exception e)
             {
-                Error.ServerError($"{e.Message}");
+                Error.ServerError($"ExternalLoginCallback failed: {e.Message}");
                 //TODO redirect to error page
                 return "";
             }

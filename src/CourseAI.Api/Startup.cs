@@ -11,6 +11,7 @@ using CourseAI.Domain.Entities.Identity;
 using CourseAI.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -80,7 +81,7 @@ internal static class Startup
                     OnAuthenticationFailed = context =>
                     {
                         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                        logger.LogError("Authentication failed.", context.Exception);
+                        logger.LogError($"OnAuthenticationFailed {context.Exception.Message}");
                         return Task.CompletedTask;
                     },
                     OnTokenValidated = context =>
@@ -97,6 +98,18 @@ internal static class Startup
                 options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                 options.CallbackPath = "/external-login/google-callback";
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                
+                options.Events = new OAuthEvents
+                {
+                    OnRemoteFailure = context =>
+                    {
+                        var error = context.Failure;
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+
+                        logger.LogError($"Failed to authenticate user {error.Message}");
+                        return Task.CompletedTask;
+                    }
+                };
             });
     }
 
