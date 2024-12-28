@@ -9,4 +9,5 @@ public static class ConfigSectionNames
     public const string Development = nameof(Development);
     public const string Jwt = nameof(Jwt);
     public const string Identity = nameof(Identity);
+    public const string Email = nameof(Email);
 }
