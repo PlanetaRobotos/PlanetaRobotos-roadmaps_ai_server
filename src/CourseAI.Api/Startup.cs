@@ -46,18 +46,6 @@ internal static class Startup
         builder.Services.AddInfrastructure();
         builder.Services.AddWebApi();
 
-        var smtpClient = new SmtpClient
-        {
-            Credentials = new NetworkCredential(builder.Configuration["Email:Username"], builder.Configuration["Email:Password"]),
-            Host = builder.Configuration["Email:Host"],
-            Port = int.Parse(builder.Configuration["Email:Port"]),
-            Timeout = 10000,
-        };
-
-        builder.Services
-            .AddFluentEmail(builder.Configuration["Email:SenderEmail"], builder.Configuration["Email:Sender"])
-            .AddSmtpSender(smtpClient);
-        
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
 
         builder.Services.AddAuthorization();
@@ -120,6 +108,19 @@ internal static class Startup
                     }
                 };
             });
+
+        var smtpClient = new SmtpClient
+        {
+            Credentials = new NetworkCredential(builder.Configuration["Email:Username"],
+                builder.Configuration["Email:Password"]),
+            Host = builder.Configuration["Email:Host"],
+            Port = int.Parse(builder.Configuration["Email:Port"]),
+            Timeout = 10000,
+        };
+
+        builder.Services
+            .AddFluentEmail(builder.Configuration["Email:SenderEmail"], builder.Configuration["Email:Sender"])
+            .AddSmtpSender(smtpClient);
     }
 
     public static void ConfigureWebApp(WebApplication app)
