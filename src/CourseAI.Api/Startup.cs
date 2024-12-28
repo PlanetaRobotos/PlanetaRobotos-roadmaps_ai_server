@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using CourseAI.Api.Extensions;
 using CourseAI.Api.Middlewares;
@@ -49,6 +51,19 @@ internal static class Startup
         builder.Services.AddInfrastructure();
         builder.Services.AddWebApi();
 
+        var smtpClient = new SmtpClient
+        {
+            Credentials = new NetworkCredential(builder.Configuration["Email:Username"], builder.Configuration["Email:Password"]),
+            EnableSsl = bool.Parse(builder.Configuration["Email:EnableSsl"]),
+            Host = builder.Configuration["Email:Host"],
+            Port = int.Parse(builder.Configuration["Email:Port"]),
+            Timeout = 10000,
+        };
+
+        builder.Services
+            .AddFluentEmail(builder.Configuration["Email:SenderEmail"], builder.Configuration["Email:Sender"])
+            .AddSmtpSender(smtpClient);
+        
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
 
         builder.Services.AddAuthorization();
@@ -98,7 +113,7 @@ internal static class Startup
                 options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                 options.CallbackPath = "/external-login/google-callback";
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                
+
                 options.Events = new OAuthEvents
                 {
                     OnRemoteFailure = context =>

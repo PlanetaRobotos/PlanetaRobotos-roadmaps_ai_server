@@ -12,20 +12,15 @@ namespace CourseAI.Domain.Context
 
         public override string SelectedConnectionName => "Default";
 
-        // Dynamically include environment-specific settings
         public override string[] SettingsPaths
         {
             get
             {
-                // Retrieve the current environment; default to "Production" if not set
                 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 
                 return new[]
                 {
-                    "appsettings.json", // Base settings
-                    $"appsettings.{environment}.json", // Environment-specific settings
-                    "appsettings.Secrets.json", // Common secrets
-                    $"../{GetType().Assembly.GetBaseNamespace()}.Api/appsettings.Secrets.json", // Additional secrets
+                    "appsettings.json", $"appsettings.{environment}.json", "appsettings.Secrets.json", $"../{GetType().Assembly.GetBaseNamespace()}.Api/appsettings.Secrets.json",
                 };
             }
         }

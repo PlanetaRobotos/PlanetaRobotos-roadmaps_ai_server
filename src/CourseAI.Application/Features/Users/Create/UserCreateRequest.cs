@@ -9,7 +9,7 @@ public class UserCreateRequest : UserModelBase, IValidatable<UserCreateRequest>,
 {
     public void ConfigureValidator(InlineValidator<UserCreateRequest> validator)
     {
-        validator.RuleFor(x => x.UserName).NotEmpty().MinimumLength(1).MaximumLength(100);
+        // validator.RuleFor(x => x.UserName).NotEmpty().MinimumLength(1).MaximumLength(100);
         validator.RuleFor(x => x.Email).NotEmpty().EmailAddress();
     }
 }

@@ -4,8 +4,8 @@ using Mediator;
 
 namespace CourseAI.Application.Features.Users.MagicLink
 {
-    public class SendMagicLinkRequest : IRequestModel
+    public class SendMagicLinkRequest : IRequestModel<string>
     {
-        public string Email { get; set; }
+        public long UserId { get; set; }
     }
 }

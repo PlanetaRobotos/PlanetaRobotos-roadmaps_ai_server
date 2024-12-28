@@ -3,8 +3,7 @@ using Mediator;
 
 namespace CourseAI.Application.Features.Users.MagicLink;
 
-public class MagicLinkLoginRequest : IRequestModel
+public class MagicLinkLoginRequest : IRequestModel<string>
 {
-    public long UserId { get; set; }
-    public string Token { get; set; }
+    public Guid TokenId { get; set; }
 }

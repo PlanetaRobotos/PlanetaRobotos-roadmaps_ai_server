@@ -8,24 +8,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
 
-public class AuthController : V1Controller
+public class AuthController(IConfiguration configuration) : V1Controller
 {
-    // Send Magic Link
-    [HttpPost("magic-link")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> SendMagicLink(SendMagicLinkRequest request)
+    [HttpPost("send-magic-link")]
+    [ProducesResponseType<string>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<string>> Create(SendMagicLinkRequest request)
     {
         var response = await Sender.Send(request);
-        return response.MatchEmptyResponse();
+        return response.MatchResponse(
+            token => Ok(token));
     }
 
-    // Handle Magic Link Login
-    [HttpGet("magic-link-login")]
+    [HttpGet("VerifyEmail", Name = "VerifyEmail")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    public async Task<IActionResult> MagicLinkLogin(long userId, string token)
+    public async Task<IActionResult> VerifyEmail(Guid token)
     {
-        var response = await Sender.Send(new MagicLinkLoginRequest { UserId = userId, Token = token });
-        return response.MatchEmptyResponse();
+        var response = await Sender.Send(new MagicLinkLoginRequest { TokenId = token });
+        return response.MatchResponse(
+            token =>
+            {
+                string? client = configuration["Client:Url"];
+                return Redirect($"{client}?token={token}");
+            });
     }
 
     [HttpGet("external-login/google")]
@@ -42,33 +46,6 @@ public class AuthController : V1Controller
         var response = await Sender.Send(new ExternalLoginCallbackRequest { ReturnUrl = returnUrl });
 
         return response.MatchResponse(
-            token =>
-            {
-                /*Response.Cookies.Append("token", token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = false, // Set to true in production
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.UtcNow.AddHours(1),
-                    Path = "/"
-                });*/
-
-                return Redirect($"{returnUrl}?token={token}");
-            });
+            token => Redirect($"{returnUrl}?token={token}"));
     }
-    
-    // Logout endpoint to clear the cookie
-    /*[HttpPost("logout")]
-    public IActionResult Logout()
-    {
-        Response.Cookies.Delete("token", new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false, // Set to true in production
-            SameSite = SameSiteMode.Strict,
-            Path = "/"
-        });
-
-        return Ok(new { message = "Logged out successfully" });
-    }*/
 }

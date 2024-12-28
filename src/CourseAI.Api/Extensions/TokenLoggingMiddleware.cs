@@ -1,28 +1,19 @@
 namespace CourseAI.Api.Extensions;
 
-public class TokenLoggingMiddleware
+public class TokenLoggingMiddleware(RequestDelegate next, ILogger<TokenLoggingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<TokenLoggingMiddleware> _logger;
-
-    public TokenLoggingMiddleware(RequestDelegate next, ILogger<TokenLoggingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task Invoke(HttpContext context)
     {
         if (context.Request.Headers.ContainsKey("Authorization"))
         {
             var token = context.Request.Headers["Authorization"].ToString();
-            _logger.LogInformation($"Authorization Header: {token}");
+            logger.LogInformation($"Authorization Header: {token}");
         }
         else
         {
-            _logger.LogWarning($"Authorization Header not found. {context.Request.Path}");
+            logger.LogWarning($"Authorization Header not found. {context.Request.Path}");
         }
 
-        await _next(context);
+        await next(context);
     }
 }
