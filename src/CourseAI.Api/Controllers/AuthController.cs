@@ -28,6 +28,7 @@ public class AuthController(IConfiguration configuration) : V1Controller
             token =>
             {
                 string? client = configuration["Client:Url"];
+                Logger.LogInformation("Redirecting to client {client} with token {token}", client, token);
                 return Redirect($"{client}?token={token}");
             });
     }

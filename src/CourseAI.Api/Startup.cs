@@ -48,13 +48,14 @@ internal static class Startup
 
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
         var emailOptions = builder.Services.GetOptions<EmailOptions>().Value;
-
+        
         var smtpClient = new SmtpClient
         {
+            Port = emailOptions.Port,
             Credentials = new NetworkCredential(emailOptions.Username, emailOptions.Password),
             Host = emailOptions.Host,
-            Port = emailOptions.Port,
             Timeout = 10000,
+            EnableSsl = emailOptions.EnableSsl
         };
 
         builder.Services
