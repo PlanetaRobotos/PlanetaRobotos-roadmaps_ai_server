@@ -1,15 +1,12 @@
 using System.Net;
 using System.Net.Mail;
-using System.Text;
 using CourseAI.Api.Extensions;
 using CourseAI.Api.Middlewares;
 using CourseAI.Api.Swagger.Extensions;
-// using CourseAI.Api.Swagger.Extensions;
 using CourseAI.Application;
 using CourseAI.Application.Extensions;
 using CourseAI.Application.Options;
 using CourseAI.Domain;
-using CourseAI.Domain.Entities.Identity;
 using CourseAI.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,9 +14,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
 
 namespace CourseAI.Api;
@@ -54,7 +49,6 @@ internal static class Startup
         var smtpClient = new SmtpClient
         {
             Credentials = new NetworkCredential(builder.Configuration["Email:Username"], builder.Configuration["Email:Password"]),
-            EnableSsl = bool.Parse(builder.Configuration["Email:EnableSsl"]),
             Host = builder.Configuration["Email:Host"],
             Port = int.Parse(builder.Configuration["Email:Port"]),
             Timeout = 10000,
