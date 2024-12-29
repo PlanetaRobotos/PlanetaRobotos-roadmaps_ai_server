@@ -16,12 +16,13 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace CourseAI.Api;
 
 internal static class Startup
 {
-    public static void ConfigureBuilder(WebApplicationBuilder builder)
+    public static void ConfigureBuilder(WebApplicationBuilder builder, ILogger logger)
     {
         builder.Logging.AddConsole();
 
@@ -48,7 +49,10 @@ internal static class Startup
 
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
         var emailOptions = builder.Services.GetOptions<EmailOptions>().Value;
-        
+
+        logger.Debug(
+            $"All email options: port {emailOptions.Port}, sender {emailOptions.Sender}, sender email {emailOptions.SenderEmail}, host {emailOptions.Host}, enable ssl {emailOptions.EnableSsl}, username {emailOptions.Username}, password {emailOptions.Password}");
+
         var smtpClient = new SmtpClient
         {
             Port = emailOptions.Port,
@@ -56,12 +60,13 @@ internal static class Startup
             EnableSsl = emailOptions.EnableSsl,
             Host = emailOptions.Host,
             Timeout = 10000,
+            UseDefaultCredentials = false
         };
 
         builder.Services
             .AddFluentEmail(emailOptions.SenderEmail, emailOptions.Sender)
             .AddSmtpSender(smtpClient);
-        
+
         builder.Services.AddAuthorization();
         builder.Services
             .AddAuthentication(options =>

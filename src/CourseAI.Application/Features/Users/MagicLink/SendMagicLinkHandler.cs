@@ -1,5 +1,6 @@
 using CourseAI.Application.Core;
 using CourseAI.Application.Models;
+using CourseAI.Application.Options;
 using CourseAI.Application.Services;
 using CourseAI.Domain.Context;
 using CourseAI.Domain.Entities;
@@ -8,6 +9,7 @@ using FluentEmail.Core;
 using Mediator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OneOf;
 
 namespace CourseAI.Application.Features.Users.MagicLink;
@@ -17,7 +19,8 @@ public class SendMagicLinkHandler(
     IConfiguration configuration,
     IFluentEmail fluentEmail,
     AppDbContext dbContext,
-    IEmailVerificationLinkFactory emailVerificationLinkFactory)
+    IEmailVerificationLinkFactory emailVerificationLinkFactory, 
+    IOptions<EmailOptions> emailOptions)
     : IHandler<SendMagicLinkRequest, string>
 {
     public async ValueTask<OneOf<string, Error>> Handle(SendMagicLinkRequest request, CancellationToken ct)
@@ -48,7 +51,7 @@ public class SendMagicLinkHandler(
             return Error.ServerError($"Failed to generate verification link for user {request.UserId}");
         }
         
-        logger.LogInformation($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}, sender: {fluentEmail.Sender}");
+        logger.LogInformation($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
 
         var email = await fluentEmail
             .To(user.Email)
@@ -63,7 +66,7 @@ public class SendMagicLinkHandler(
                 logger.LogError($"Error sending email: {error}");
             }
 
-        return verificationLink;
+        return emailOptions.Value.Sender;
     }
 
     private string GetEmailBody(string verificationLink)
