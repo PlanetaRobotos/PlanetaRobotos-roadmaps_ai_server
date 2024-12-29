@@ -15,7 +15,7 @@ using OneOf;
 namespace CourseAI.Application.Features.Users.MagicLink;
 
 public class SendMagicLinkHandler(
-    ILogger logger,
+    ILogger<IHandler<SendMagicLinkRequest, string>> logger,
     IFluentEmail fluentEmail,
     AppDbContext dbContext,
     IEmailVerificationLinkFactory emailVerificationLinkFactory, 
