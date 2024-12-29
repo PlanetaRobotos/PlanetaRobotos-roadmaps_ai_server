@@ -12,7 +12,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
     logger.Debug("[startup] Configuring application builder..");
-    Startup.ConfigureBuilder(builder, logger);
+    Startup.ConfigureBuilder(builder);
 
     var app = builder.Build();
     logger.Debug("[startup] Applying database migrations..");

@@ -22,7 +22,7 @@ namespace CourseAI.Api;
 
 internal static class Startup
 {
-    public static void ConfigureBuilder(WebApplicationBuilder builder, ILogger logger)
+    public static void ConfigureBuilder(WebApplicationBuilder builder)
     {
         builder.Logging.AddConsole();
 
@@ -49,18 +49,13 @@ internal static class Startup
 
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
         var emailOptions = builder.Services.GetOptions<EmailOptions>().Value;
-
-        logger.Debug(
-            $"All email options: port {emailOptions.Port}, sender {emailOptions.Sender}, sender email {emailOptions.SenderEmail}, host {emailOptions.Host}, enable ssl {emailOptions.EnableSsl}, username {emailOptions.Username}, password {emailOptions.Password}");
-
+        
         var smtpClient = new SmtpClient
         {
             Port = emailOptions.Port,
             Credentials = new NetworkCredential(emailOptions.Username, emailOptions.Password),
-            EnableSsl = emailOptions.EnableSsl,
             Host = emailOptions.Host,
             Timeout = 10000,
-            UseDefaultCredentials = false
         };
 
         builder.Services

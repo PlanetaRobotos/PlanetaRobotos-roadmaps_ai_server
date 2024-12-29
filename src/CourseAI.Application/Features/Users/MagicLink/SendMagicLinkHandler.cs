@@ -15,8 +15,7 @@ using OneOf;
 namespace CourseAI.Application.Features.Users.MagicLink;
 
 public class SendMagicLinkHandler(
-    ILogger<SendMagicLinkHandler> logger,
-    IConfiguration configuration,
+    ILogger logger,
     IFluentEmail fluentEmail,
     AppDbContext dbContext,
     IEmailVerificationLinkFactory emailVerificationLinkFactory, 
@@ -45,13 +44,15 @@ public class SendMagicLinkHandler(
         await dbContext.SaveChangesAsync(ct);
 
         var verificationLink = emailVerificationLinkFactory.Create(verificationToken);
+        
+        logger.LogWarning($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
 
         if (verificationLink == null)
         {
             return Error.ServerError($"Failed to generate verification link for user {request.UserId}");
         }
         
-        logger.LogInformation($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
+        logger.LogWarning($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
 
         var email = await fluentEmail
             .To(user.Email)
