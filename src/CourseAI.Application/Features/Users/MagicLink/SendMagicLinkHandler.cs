@@ -19,7 +19,7 @@ public class SendMagicLinkHandler(
     IFluentEmail fluentEmail,
     AppDbContext dbContext,
     IEmailVerificationLinkFactory emailVerificationLinkFactory, 
-    IOptions<EmailOptions> emailOptions)
+    IOptions<EmailOptions> emailOptions2)
     : IHandler<SendMagicLinkRequest, string>
 {
     public async ValueTask<OneOf<string, Error>> Handle(SendMagicLinkRequest request, CancellationToken ct)
@@ -51,9 +51,13 @@ public class SendMagicLinkHandler(
         {
             return Error.ServerError($"Failed to generate verification link for user {request.UserId}");
         }
+
+        var emailOptions = emailOptions2.Value;
         
         logger.LogWarning($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
-
+        logger.LogWarning(
+            $"All email options: port {emailOptions.Port}, sender {emailOptions.Sender}, sender email {emailOptions.SenderEmail}, host {emailOptions.Host}, enable ssl {emailOptions.EnableSsl}, username {emailOptions.Username}, password {emailOptions.Password}");
+        
         var email = await fluentEmail
             .To(user.Email)
             .Subject("Email Verification to Levenue Courses")
@@ -67,7 +71,7 @@ public class SendMagicLinkHandler(
                 logger.LogError($"Error sending email: {error}");
             }
 
-        return emailOptions.Value.Sender;
+        return emailOptions2.Value.Sender;
     }
 
     private string GetEmailBody(string verificationLink)
