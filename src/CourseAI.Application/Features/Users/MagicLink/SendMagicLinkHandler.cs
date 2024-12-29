@@ -53,8 +53,8 @@ public class SendMagicLinkHandler(
         var email = await fluentEmail
             .To(user.Email)
             .Subject("Email Verification to Levenue Courses")
-            // .Body(GetEmailBody(verificationLink), isHtml: true)
-            .Body($"Please verify your email by clicking <a href={verificationLink}>this link</a>", isHtml: true)
+            .Body(GetEmailBody(verificationLink), isHtml: true)
+            // .Body($"Please verify your email by clicking <a href={verificationLink}>this link</a>", isHtml: true)
             .SendAsync();
 
         if (!email.Successful)
