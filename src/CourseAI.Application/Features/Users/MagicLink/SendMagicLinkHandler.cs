@@ -47,12 +47,14 @@ public class SendMagicLinkHandler(
         {
             return Error.ServerError($"Failed to generate verification link for user {request.UserId}");
         }
+        
+        logger.LogInformation($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}, sender: {fluentEmail.Sender}");
 
         var email = await fluentEmail
             .To(user.Email)
             .Subject("Email Verification to Levenue Courses")
-            .Body(GetEmailBody(verificationLink),
-                isHtml: true)
+            // .Body(GetEmailBody(verificationLink), isHtml: true)
+            .Body($"Please verify your email by clicking <a href={verificationLink}>this link</a>", isHtml: true)
             .SendAsync();
 
         if (!email.Successful)
