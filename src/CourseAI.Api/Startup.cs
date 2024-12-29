@@ -52,10 +52,10 @@ internal static class Startup
         var smtpClient = new SmtpClient
         {
             Port = emailOptions.Port,
-            Credentials = new NetworkCredential(emailOptions.Username, emailOptions.Password),
+            // Credentials = new NetworkCredential(emailOptions.Username, emailOptions.Password),
+            // EnableSsl = emailOptions.EnableSsl,
             Host = emailOptions.Host,
             Timeout = 10000,
-            EnableSsl = emailOptions.EnableSsl
         };
 
         builder.Services
