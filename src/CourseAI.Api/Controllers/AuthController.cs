@@ -29,7 +29,7 @@ public class AuthController(IConfiguration configuration) : V1Controller
             {
                 string? client = configuration["Client:Url"];
                 Logger.LogInformation("Redirecting to client {client} with token {token}", client, token);
-                return Redirect($"{client}?token={token}");
+                return Redirect($"{client}/dashboard?token={token}");
             });
     }
 
@@ -47,6 +47,10 @@ public class AuthController(IConfiguration configuration) : V1Controller
         var response = await Sender.Send(new ExternalLoginCallbackRequest { ReturnUrl = returnUrl });
 
         return response.MatchResponse(
-            token => Redirect($"{returnUrl}?token={token}"));
+            token =>
+            {
+                string? client = configuration["Client:Url"];
+                return Redirect($"{client}/dashboard?token={token}");
+            });
     }
 }
