@@ -11,6 +11,7 @@ using CourseAI.Application.Models.Roadmaps;
 using CourseAI.Application.Models.Shared;
 using CourseAI.Application.Models.UserLikes;
 using CourseAI.Application.Models.UserRoadmaps;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
@@ -35,6 +36,7 @@ public class RoadmapsController : V1Controller
     }
     
     [HttpPost]
+    [Authorize]
     [ProducesResponseType<RoadmapModel>(StatusCodes.Status201Created)]
     public async Task<ActionResult> Create(RoadmapCreateRequest request)
     {

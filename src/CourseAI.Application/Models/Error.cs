@@ -54,6 +54,12 @@ public sealed record Error
         type: "Unauthorized",
         message: "You have to authenticate first"
     );
+    
+    public static Error Unauthorized(string message) => new(
+        status: 401,
+        type: "Unauthorized",
+        message: message
+    );
 
     public static Error Forbidden() => new(
         status: 403,

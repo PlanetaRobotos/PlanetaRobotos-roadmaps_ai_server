@@ -1,4 +1,6 @@
-﻿namespace CourseAI.Domain.Entities.Roadmaps;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace CourseAI.Domain.Entities.Roadmaps;
 
 public class LessonContent
 {

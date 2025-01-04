@@ -49,7 +49,7 @@ internal static class Startup
 
         var accessToken = builder.Services.GetOptions<JwtOptions>().Value.AccessToken;
         var emailOptions = builder.Services.GetOptions<EmailOptions>().Value;
-        
+
         var smtpClient = new SmtpClient
         {
             Port = emailOptions.Port,
@@ -62,7 +62,9 @@ internal static class Startup
             .AddFluentEmail(emailOptions.SenderEmail, emailOptions.Sender)
             .AddSmtpSender(smtpClient);
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+
         builder.Services
             .AddAuthentication(options =>
             {
@@ -124,8 +126,23 @@ internal static class Startup
             });
     }
 
-    public static void ConfigureWebApp(WebApplication app)
+    public static async Task ConfigureWebAppAsync(WebApplication app)
     {
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            try
+            {
+                await RoleSeeder.SeedRolesAsync(services);
+                await UserSeeder.SeedAdminUserAsync(services);
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while seeding roles or admin user.");
+            }
+        }
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();

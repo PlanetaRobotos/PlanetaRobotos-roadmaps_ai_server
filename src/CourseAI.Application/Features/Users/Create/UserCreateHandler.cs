@@ -1,6 +1,8 @@
 using CourseAI.Application.Core;
 using CourseAI.Application.Extensions;
 using CourseAI.Application.Models;
+using CourseAI.Application.Services;
+using CourseAI.Core.Security;
 using CourseAI.Domain.Entities.Identity;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
@@ -9,29 +11,22 @@ using OneOf;
 namespace CourseAI.Application.Features.Users.Create;
 
 public class UserCreateHandler(
-    UserManager<User> userManager
-    ) : IHandler<UserCreateRequest, UserModel>
+    UserManager<User> userManager,
+    IUserService userService
+) : IHandler<UserCreateRequest, UserModel>
 {
     public async ValueTask<OneOf<UserModel, Error>> Handle(UserCreateRequest request, CancellationToken ct)
     {
         var user = await userManager.FindByEmailAsync(request.Email);
 
-        if (user != null)
+        if (user is { EmailConfirmed: true })
         {
-            throw new Exception("User already exists");
+            return user.Adapt<UserModel>();
         }
-        
-        user = new User
-        {
-            Email = request.Email,
-            UserName = request.Email.ToUsername(),
-            EmailConfirmed = false
-        };
 
-        var identityResult = await userManager.CreateAsync(user);
-        if (!identityResult.Succeeded)
+        if (!await userService.CreateUser(request.Email, false, Roles.User))
         {
-            return Error.ServerError($"identityResult Failed: {identityResult.Errors}");
+            return Error.ServerError("Failed to create user.");
         }
 
         return user.Adapt<UserModel>();

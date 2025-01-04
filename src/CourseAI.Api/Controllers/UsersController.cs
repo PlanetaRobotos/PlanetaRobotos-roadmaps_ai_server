@@ -15,6 +15,7 @@ using CourseAI.Application.Models;
 using CourseAI.Application.Models.Roadmaps;
 using CourseAI.Application.Models.Shared;
 using CourseAI.Application.Models.UserRoadmaps;
+using CourseAI.Application.Services;
 using CourseAI.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -22,7 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
 
-public class UsersController(UserManager<User> userManager) : V1Controller
+public class UsersController(UserManager<User> userManager, IUserService userService) : V1Controller
 {
     [Authorize]
     [HttpGet("me")]
@@ -42,8 +43,7 @@ public class UsersController(UserManager<User> userManager) : V1Controller
         {
             Id = user.Id,
             Email = user.Email,
-            UserName = user.UserName
-            // Add other properties as needed
+            FirstName = user.FirstName
         };
     
         return Ok(userModel);
@@ -132,5 +132,18 @@ public class UsersController(UserManager<User> userManager) : V1Controller
         request.UserId = userId;
         var response = await Sender.Send(request);
         return response.MatchResponse(UserQuizzes => Ok(UserQuizzes));
+    }
+    
+    [HttpGet("roles")]
+    public async Task<IActionResult> GetUserRoles()
+    {
+        var userResult = await userService.GetUser();
+        var user = userResult.Match(
+            user => user,
+            error => throw new Exception(error.Message)
+        );
+
+        var roles = await userManager.GetRolesAsync(user);
+        return Ok(new { Roles = roles });
     }
 }

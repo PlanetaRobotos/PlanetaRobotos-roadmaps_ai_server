@@ -12,10 +12,13 @@ public class User : IdentityUser<long>, IDateableEntity<long>
     public DateTime Created { get; init; }
     public DateTime? Updated { get; init; }
 
+    public string? FirstName { get; set; }
+    public int Tokens { get; set; }
     public ICollection<UserTableSettings>? TableSettings { get; init; }
     public ICollection<UserRoadmap>? UserRoadmaps { get; init; }
     public ICollection<UserLike>? UserLikes { get; init; }
     public ICollection<UserQuiz> UserQuizzes { get; init; }
+    
     public Guid UserRoadmapId { get; set; }
 
     internal class Configuration : IEntityTypeConfiguration<User>

@@ -4,6 +4,7 @@ using CourseAI.Application.Features.Users.ExternalLogin;
 using CourseAI.Application.Features.Users.MagicLink;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
@@ -15,8 +16,20 @@ public class AuthController(IConfiguration configuration) : V1Controller
     public async Task<ActionResult<string>> Create(SendMagicLinkRequest request)
     {
         var response = await Sender.Send(request);
+        return response.MatchResponse(email => Ok(email));
+    }
+
+    [HttpGet("redirect")]
+    public async Task<ActionResult<string>> RedirectToDashboard([FromQuery] RedirectRequest request)
+    {
+        var response = await Sender.Send(request);
         return response.MatchResponse(
-            token => Ok(token));
+            token =>
+            {
+                string? client = configuration["Client:Url"];
+                Logger.LogInformation("Redirecting to client {client} with token {token}", client, token);
+                return Redirect($"{client}/dashboard?token={token}");
+            });
     }
 
     [HttpGet("VerifyEmail", Name = "VerifyEmail")]

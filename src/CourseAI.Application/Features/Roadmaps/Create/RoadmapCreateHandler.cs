@@ -1,75 +1,137 @@
-﻿using CourseAI.Application.Core;
+﻿using System.Security.Claims;
+using CourseAI.Application.Core;
 using CourseAI.Application.Models;
 using CourseAI.Application.Models.Roadmaps;
 using CourseAI.Application.Services;
+using CourseAI.Core.Enums;
 using CourseAI.Domain.Context;
+using CourseAI.Domain.Entities.Identity;
 using CourseAI.Domain.Entities.Roadmaps;
+using CourseAI.Domain.Entities.Transactions;
 using Mapster;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using OneOf;
 
 namespace CourseAI.Application.Features.Roadmaps.Create;
 
-public class RoadmapCreateHandler(AppDbContext dbContext, IContentGenerator contentGenerator)
+public class RoadmapCreateHandler(
+    AppDbContext dbContext,
+    IHttpContextAccessor httpContextAccessor,
+    IContentGenerator contentGenerator,
+    UserManager<User> userManager,
+    IUserService userService)
     : IHandler<RoadmapCreateRequest, RoadmapModel>
 {
     public async ValueTask<OneOf<RoadmapModel, Error>> Handle(RoadmapCreateRequest request, CancellationToken ct)
     {
         var roadmap = request.ToEntity();
+        var courseCost = GetCourseCost(roadmap);
 
-        dbContext.Roadmaps.Add(roadmap);
-        await dbContext.SaveChangesAsync(ct);
+        if (courseCost <= 0)
+            return Error.ServerError("Invalid course token cost.");
 
-        var roadmapAI = await GenerateModulesAndLessonsAsync(roadmap);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
-        if (string.IsNullOrWhiteSpace(roadmapAI))
+        try
         {
-            return Error.ServerError("Failed to generate roadmap modules and lessons.");
-        }
+            var userResult = await userService.GetUser();
+            var user = userResult.Match(
+                user => user,
+                error => throw new Exception(error.Message)
+            );
 
-        var updated = await AttachModulesAndLessonsAsync(roadmap, roadmapAI, ct);
+            if (user.Tokens < courseCost)
+                return Error.ServerError("Insufficient tokens to create the course.");
 
-        if (!updated)
-        {
-            return Error.ServerError("Failed to attach generated modules and lessons to the roadmap.");
-        }
+            user.Tokens -= courseCost;
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return Error.ServerError("Failed to update user tokens.");
 
-        //get all lesson ids from roadmap.Modules.Lessons
-        var lessonIds = roadmap.Modules.SelectMany(m => m.Lessons).Select(l => l.Id).ToList();
-
-        for (int i = 0; i < lessonIds.Count; i++)
-        {
-            var lesson = await dbContext.Lessons
-                .Where(e => e.Id == lessonIds[i])
-                .Include(l => l.Quizzes) // Include quizzes if needed
-                .FirstOrDefaultAsync(ct);
-
-            if (lesson is null)
-                return Error.NotFound<Lesson>();
-
-            // Check if lesson content and quizzes are missing
-            if (lesson.Content != null && lesson.Quizzes.Any())
+            var tokenTransaction = new TokenTransaction
             {
-                continue;
+                UserId = Convert.ToInt64(user.Id),
+                Amount = -courseCost,
+                TransactionType = TransactionType.CourseGeneration,
+            };
+
+            dbContext.TokenTransactions.Add(tokenTransaction);
+            await dbContext.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+
+            // Course Generation
+            dbContext.Roadmaps.Add(roadmap);
+            await dbContext.SaveChangesAsync(ct);
+
+            var roadmapAI = await GenerateModulesAndLessonsAsync(roadmap);
+
+            if (string.IsNullOrWhiteSpace(roadmapAI))
+            {
+                return Error.ServerError("Failed to generate roadmap modules and lessons.");
             }
 
-            var prompt = $"Generate detailed lesson content for '{lesson.Title}' as per the system format.";
+            var updated = await AttachModulesAndLessonsAsync(roadmap, roadmapAI, ct);
 
-            var lessonAI = await contentGenerator.GenerateContentAsync(prompt, GetSystemMessage());
+            if (!updated)
+            {
+                return Error.ServerError("Failed to attach generated modules and lessons to the roadmap.");
+            }
 
-            if (string.IsNullOrWhiteSpace(lessonAI))
-                return Error.ServerError($"Error generating content for lesson '{lesson.Title}'.");
+            //get all lesson ids from roadmap.Modules.Lessons
+            var lessonIds = roadmap.Modules.SelectMany(m => m.Lessons).Select(l => l.Id).ToList();
 
-            var attached = await AttachLessonContentAsync(lesson, lessonAI, ct);
+            for (int i = 0; i < lessonIds.Count; i++)
+            {
+                var lesson = await dbContext.Lessons
+                    .Where(e => e.Id == lessonIds[i])
+                    .Include(l => l.Quizzes) // Include quizzes if needed
+                    .FirstOrDefaultAsync(ct);
 
-            if (!attached)
-                return Error.ServerError($"Error attaching generated content for lesson '{lesson.Title}'.");
+                if (lesson is null)
+                    return Error.NotFound<Lesson>();
 
-            await dbContext.SaveChangesAsync(ct);
+                // Check if lesson content and quizzes are missing
+                if (lesson.Content != null && lesson.Quizzes.Any())
+                {
+                    continue;
+                }
+
+                var prompt = $"Generate detailed lesson content for '{lesson.Title}' as per the system format.";
+
+                var lessonAI = await contentGenerator.GenerateContentAsync(prompt, GetSystemMessage());
+
+                if (string.IsNullOrWhiteSpace(lessonAI))
+                    return Error.ServerError($"Error generating content for lesson '{lesson.Title}'.");
+
+                var attached = await AttachLessonContentAsync(lesson, lessonAI, ct);
+
+                if (!attached)
+                    return Error.ServerError($"Error attaching generated content for lesson '{lesson.Title}'.");
+
+                await dbContext.SaveChangesAsync(ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(ct);
+            return Error.ServerError(ex.Message);
         }
 
         return roadmap.Adapt<RoadmapModel>();
+    }
+
+    private static int GetCourseCost(Roadmap roadmap)
+    {
+        return roadmap.EstimatedDuration switch
+        {
+            15 => 10,
+            30 => 15,
+            60 => 20,
+            _ => 0
+        };
     }
 
     private static async Task<bool> AttachLessonContentAsync(Lesson lesson, string aiResponse, CancellationToken ct)
@@ -114,7 +176,8 @@ public class RoadmapCreateHandler(AppDbContext dbContext, IContentGenerator cont
 
     private async Task<string?> GenerateModulesAndLessonsAsync(Roadmap roadmap)
     {
-        var userPrompt = $"Add modules and lessons for the roadmap '{roadmap.Title}', estimated duration in minutes: {roadmap.EstimatedDuration}.";
+        var userPrompt =
+            $"Add modules and lessons for the roadmap '{roadmap.Title}', estimated duration in minutes: {roadmap.EstimatedDuration}.";
 
         var aiResponse = await contentGenerator.GenerateContentAsync(userPrompt,
             GetRoadmapSystemMessage());
@@ -246,33 +309,25 @@ You are a roadmap-generation assistant. Return a JSON object with single-quoted 
 
 public class LessonAiResponseDto
 {
-    [JsonProperty("content")]
-    public LessonContentDto Content { get; set; }
+    [JsonProperty("content")] public LessonContentDto Content { get; set; }
 
-    [JsonProperty("quizzes")]
-    public List<QuizDto> Quizzes { get; set; }
+    [JsonProperty("quizzes")] public List<QuizDto> Quizzes { get; set; }
 }
 
 public class LessonContentDto
 {
-    [JsonProperty("mainContent")]
-    public string MainContent { get; set; }
+    [JsonProperty("mainContent")] public string MainContent { get; set; }
 
-    [JsonProperty("resources")]
-    public List<string> Resources { get; set; }
+    [JsonProperty("resources")] public List<string> Resources { get; set; }
 
-    [JsonProperty("examples")]
-    public List<string> Examples { get; set; }
+    [JsonProperty("examples")] public List<string> Examples { get; set; }
 }
 
 public class QuizDto
 {
-    [JsonProperty("question")]
-    public string Question { get; set; }
+    [JsonProperty("question")] public string Question { get; set; }
 
-    [JsonProperty("answers")]
-    public List<string> Answers { get; set; }
+    [JsonProperty("answers")] public List<string> Answers { get; set; }
 
-    [JsonProperty("correctAnswerIndex")]
-    public int CorrectAnswerIndex { get; set; }
+    [JsonProperty("correctAnswerIndex")] public int CorrectAnswerIndex { get; set; }
 }

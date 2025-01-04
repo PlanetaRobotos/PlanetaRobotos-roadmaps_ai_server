@@ -43,7 +43,6 @@ public class Roadmap: IDateableEntity<Guid>
             builder.Property(e => e.Created).IsRequired();
             builder.Property(e => e.Updated).IsRequired(false);
             builder.Property(e => e.Likes).HasDefaultValue(0);
-            // builder.Property(e => e.AuthorId).
 
             builder.HasMany(e => e.Modules).WithOne(e => e.Roadmap).HasForeignKey(e => e.RoadmapId);
         }

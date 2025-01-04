@@ -4,6 +4,7 @@ using CourseAI.Domain.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseAI.Domain.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250103083908_transactionsandroles")]
+    partial class transactionsandroles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,9 +186,6 @@ namespace CourseAI.Domain.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -246,16 +246,16 @@ namespace CourseAI.Domain.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "e3c3d9e9-deea-46e5-b9d2-c836a6456696",
+                            ConcurrencyStamp = "066fec0b-fe2c-4be2-b899-de399e16cfdc",
                             Created = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@mrCourseAI.dev",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@MRCourseAI.DEV",
                             NormalizedUserName = "ARKODE",
-                            PasswordHash = "AQAAAAIAAYagAAAAEG00Ry3MkUcDhGpJ+qV0+rbJhKdI3ApBItgkvEm8rgU1NcyB6N334fTOgcJYB/lcZw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEI+XuFgZ5bzqqyUGqGCT4xZj2LLJWNrdYykY5+SVXHWrhoM1SD9omBy2UpZxXy/3XA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "30fbd42c-f004-4f5a-a9d0-fc49d99d99e0",
+                            SecurityStamp = "adda4d44-c022-46ee-a4b9-11a0e5712db1",
                             Tokens = 0,
                             TwoFactorEnabled = false,
                             UserName = "arkode",

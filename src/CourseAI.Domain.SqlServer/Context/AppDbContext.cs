@@ -3,6 +3,7 @@ using CourseAI.Domain.Entities;
 using CourseAI.Domain.Entities.Common;
 using CourseAI.Domain.Entities.Identity;
 using CourseAI.Domain.Entities.Roadmaps;
+using CourseAI.Domain.Entities.Transactions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -28,6 +29,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<UserRoadmap> UserRoadmaps { get; init; } 
     public DbSet<UserQuiz> UserQuizzes { get; set; }
     public DbSet<UserLike> UserLikes { get; set; }
+    public DbSet<TokenTransaction> TokenTransactions { get; set; }
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {

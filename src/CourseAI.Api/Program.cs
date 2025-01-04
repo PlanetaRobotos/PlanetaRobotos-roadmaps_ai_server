@@ -1,5 +1,6 @@
 using CourseAI.Api;
 using CourseAI.Api.Core;
+using CourseAI.Api.Extensions;
 using CourseAI.Domain.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,8 @@ try
     // ApplyDbMigrations(app.Services);
 
     logger.Debug("[startup] Running web application..");
-    Startup.ConfigureWebApp(app);
+    
+    await Startup.ConfigureWebAppAsync(app);
 
     // app.Run(isProduction ? $"http://0.0.0.0:{port}" : null);
     app.Run();
