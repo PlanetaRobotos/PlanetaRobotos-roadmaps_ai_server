@@ -5,6 +5,7 @@ using CourseAI.Core.Security;
 using CourseAI.Domain.Entities.Identity;
 using Mediator;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using OneOf;
 
 namespace CourseAI.Application.Features.Purchases;
@@ -12,14 +13,17 @@ namespace CourseAI.Application.Features.Purchases;
 public class BuyPlanHandler(
     IUserService userService,
     IRoleService roleService,
-    UserManager<User> userManager
-)
+    ILogger<IHandler<BuyPlanRequest>> logger)
     : IHandler<BuyPlanRequest>
 {
     public async ValueTask<OneOf<Unit, Error>> Handle(BuyPlanRequest request, CancellationToken ct)
     {
         // Validate request
-        if (!new[] { Roles.Standard, Roles.Enterprise, Roles.User }.Contains(request.Plan))
+        var roles = new[] { Roles.Standard, Roles.Enterprise, Roles.User };
+        
+        logger.LogInformation($"Buying plan: {request.Plan}, roles: {string.Join(", ", roles)}");
+
+        if (!roles.Contains(request.Plan))
             return Error.ServerError("Invalid plan selected.");
 
         var userResult = await userService.GetUser();
