@@ -11,7 +11,7 @@ public class TokensController: V1Controller
 {
     [HttpGet("balance")]
     [Authorize]
-    [ProducesResponseType<UserModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType<string>(StatusCodes.Status200OK)]
     public async Task<ActionResult<int>> GetBalance()
     {
         var response = await Sender.Send(new TokensGetBalanceRequest());
@@ -19,7 +19,6 @@ public class TokensController: V1Controller
     }
     
     [HttpPost("refill")]
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RefillTokens(RefillTokensRequest request)
     {
         var response = await Sender.Send(request);

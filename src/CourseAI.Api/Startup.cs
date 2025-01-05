@@ -41,6 +41,8 @@ internal static class Startup
             var factory = sp.GetRequiredService<IUrlHelperFactory>();
             return factory.GetUrlHelper(actionContext);
         });
+        
+        builder.Services.AddHostedService<DailyTokenService>();
 
         builder.Services.AddDomain();
         builder.Services.AddApplication();

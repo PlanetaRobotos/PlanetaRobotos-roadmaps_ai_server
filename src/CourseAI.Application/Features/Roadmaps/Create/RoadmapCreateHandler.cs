@@ -1,15 +1,14 @@
-﻿using System.Security.Claims;
-using CourseAI.Application.Core;
+﻿using CourseAI.Application.Core;
 using CourseAI.Application.Models;
 using CourseAI.Application.Models.Roadmaps;
 using CourseAI.Application.Services;
 using CourseAI.Core.Enums;
+using CourseAI.Core.Security;
 using CourseAI.Domain.Context;
 using CourseAI.Domain.Entities.Identity;
 using CourseAI.Domain.Entities.Roadmaps;
 using CourseAI.Domain.Entities.Transactions;
 using Mapster;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -19,7 +18,6 @@ namespace CourseAI.Application.Features.Roadmaps.Create;
 
 public class RoadmapCreateHandler(
     AppDbContext dbContext,
-    IHttpContextAccessor httpContextAccessor,
     IContentGenerator contentGenerator,
     UserManager<User> userManager,
     IUserService userService)
@@ -28,10 +26,7 @@ public class RoadmapCreateHandler(
     public async ValueTask<OneOf<RoadmapModel, Error>> Handle(RoadmapCreateRequest request, CancellationToken ct)
     {
         var roadmap = request.ToEntity();
-        var courseCost = GetCourseCost(roadmap);
-
-        if (courseCost <= 0)
-            return Error.ServerError("Invalid course token cost.");
+        var coursePrice = request.Price;
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
@@ -42,24 +37,32 @@ public class RoadmapCreateHandler(
                 user => user,
                 error => throw new Exception(error.Message)
             );
+            
+            var roles = await userManager.GetRolesAsync(user);
 
-            if (user.Tokens < courseCost)
-                return Error.ServerError("Insufficient tokens to create the course.");
-
-            user.Tokens -= courseCost;
-            var result = await userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                return Error.ServerError("Failed to update user tokens.");
-
-            var tokenTransaction = new TokenTransaction
+            if (!roles.Contains(Roles.Standard) && !roles.Contains(Roles.Enterprise))
             {
-                UserId = Convert.ToInt64(user.Id),
-                Amount = -courseCost,
-                TransactionType = TransactionType.CourseGeneration,
-            };
+                // Operate on tokens
+                if (user.Tokens < coursePrice)
+                    return Error.ServerError("Insufficient tokens to create the course.");
 
-            dbContext.TokenTransactions.Add(tokenTransaction);
-            await dbContext.SaveChangesAsync(ct);
+                user.Tokens -= coursePrice;
+                
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    return Error.ServerError("Failed to update user tokens.");
+                
+                var tokenTransaction = new TokenTransaction
+                {
+                    UserId = Convert.ToInt64(user.Id),
+                    Amount = -coursePrice,
+                    TransactionType = TransactionType.CourseGeneration,
+                };
+                
+                dbContext.TokenTransactions.Add(tokenTransaction);
+                await dbContext.SaveChangesAsync(ct);
+            }
+
             await transaction.CommitAsync(ct);
 
             // Course Generation
@@ -123,16 +126,16 @@ public class RoadmapCreateHandler(
         return roadmap.Adapt<RoadmapModel>();
     }
 
-    private static int GetCourseCost(Roadmap roadmap)
-    {
-        return roadmap.EstimatedDuration switch
-        {
-            15 => 10,
-            30 => 15,
-            60 => 20,
-            _ => 0
-        };
-    }
+    // private static int GetCourseCost(Roadmap roadmap)
+    // {
+    //     return roadmap.EstimatedDuration switch
+    //     {
+    //         15 => 10,
+    //         30 => 15,
+    //         60 => 20,
+    //         _ => 0
+    //     };
+    // }
 
     private static async Task<bool> AttachLessonContentAsync(Lesson lesson, string aiResponse, CancellationToken ct)
     {

@@ -11,6 +11,7 @@ using CourseAI.Application.Models.Roadmaps;
 using CourseAI.Application.Models.Shared;
 using CourseAI.Application.Models.UserLikes;
 using CourseAI.Application.Models.UserRoadmaps;
+using CourseAI.Core.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,6 @@ namespace CourseAI.Api.Controllers;
 
 public class RoadmapsController : V1Controller
 {
-    
     [HttpGet("{id:guid}")]
     [ProducesResponseType<RoadmapModel>(StatusCodes.Status200OK)]
     public async Task<ActionResult> GetById(Guid id)

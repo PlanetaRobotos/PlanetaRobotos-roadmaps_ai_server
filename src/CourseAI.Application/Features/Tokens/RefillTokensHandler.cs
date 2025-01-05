@@ -1,33 +1,32 @@
-﻿using System.Security.Claims;
-using CourseAI.Application.Core;
+﻿using CourseAI.Application.Core;
 using CourseAI.Application.Models;
+using CourseAI.Application.Services;
 using CourseAI.Core.Enums;
+using CourseAI.Core.Security;
 using CourseAI.Domain.Context;
 using CourseAI.Domain.Entities.Identity;
 using CourseAI.Domain.Entities.Transactions;
 using Mediator;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 
 namespace CourseAI.Application.Features.Tokens;
 
-public class RefillTokensHandler(IHttpContextAccessor httpContextAccessor, UserManager<User> userManager, AppDbContext dbContext)
+public class RefillTokensHandler(UserManager<User> userManager, IUserService userService, AppDbContext dbContext)
     : IHandler<RefillTokensRequest>
 {
     public async ValueTask<OneOf<Unit, Error>> Handle(RefillTokensRequest request, CancellationToken ct)
     {
-        var httpUser = httpContextAccessor.HttpContext?.User;
-        if (httpUser == null)
-            return Error.Unauthorized("User not found from httpContextAccessor");
+        var userResult = await userService.GetUser();
+        var user = userResult.Match(
+            user => user,
+            error => throw new Exception(error.Message)
+        );
+        
+        var roles = await userManager.GetRolesAsync(user);
 
-        var userId = httpUser.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Error.Unauthorized("User not found by ClaimTypes.NameIdentifier");
-
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return Error.Unauthorized("User not found from userManager");
+        if (roles.Contains(Roles.Standard) || roles.Contains(Roles.Enterprise))
+            return Error.ServerError("You need to have a plan to refill tokens.");
         
         user.Tokens += request.Amount;
         
