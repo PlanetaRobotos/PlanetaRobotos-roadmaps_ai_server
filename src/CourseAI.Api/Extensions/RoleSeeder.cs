@@ -7,10 +7,8 @@ public static class RoleSeeder
     public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>();
-
-        string[] roleNames = [Roles.Admin, Roles.User, Roles.Standard, Roles.Enterprise];
-
-        foreach (var roleName in roleNames)
+        
+        foreach (var roleName in Enum.GetNames(typeof(Roles)))
         {
             var roleExists = await roleManager.RoleExistsAsync(roleName);
             if (!roleExists)

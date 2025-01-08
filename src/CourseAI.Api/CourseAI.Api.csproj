@@ -40,4 +40,8 @@
         <Folder Include="Logs\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Remove="appsettings.Secrets.json" />
+    </ItemGroup>
+
 </Project>

@@ -13,7 +13,7 @@ namespace CourseAI.Infrastructure.Services;
 [Service]
 public class UserService(UserManager<User> userManager, IRoleService roleService, IHttpContextAccessor httpContextAccessor) : IUserService
 {
-    public async Task<bool> CreateUser(string email, bool emailConfirmed, string? role)
+    public async Task<User?> CreateUser(string email, bool emailConfirmed, string? role, int tokensAmount)
     {
         var user = new User
         {
@@ -28,7 +28,7 @@ public class UserService(UserManager<User> userManager, IRoleService roleService
         {
             foreach (var error in identityResult.Errors)
                 Error.ServerError($"identityResult Failed: {error.Description}");
-            return false;
+            return null;
         }
 
         if (role != null)
@@ -37,8 +37,19 @@ public class UserService(UserManager<User> userManager, IRoleService roleService
             if (!assignResult)
                 Error.ServerError("Failed to assign role.");
         }
+        
+        if (tokensAmount > 0)
+        {
+            user.Tokens += tokensAmount;
+            var updateResult = await userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                    Error.ServerError($"updateResult Failed: {error.Description}");
+            }
+        }
 
-        return true;
+        return user;
     }
 
     public async ValueTask<OneOf<User, Error>> GetUser()

@@ -19,11 +19,9 @@ public class BuyPlanHandler(
     public async ValueTask<OneOf<Unit, Error>> Handle(BuyPlanRequest request, CancellationToken ct)
     {
         // Validate request
-        var roles = new[] { Roles.Standard, Roles.Enterprise, Roles.User };
-        
-        logger.LogInformation($"Buying plan: {request.Plan}, roles: {string.Join(", ", roles)}");
+        logger.LogInformation($"Buying plan: {request.Plan}");
 
-        if (!roles.Contains(request.Plan))
+        if (!Enum.IsDefined(typeof(Roles), request.Plan))
             return Error.ServerError("Invalid plan selected.");
 
         var userResult = await userService.GetUser();

@@ -15,7 +15,7 @@ public class DeletePlanHandler(
     public async ValueTask<OneOf<Unit, Error>> Handle(DeletePlanRequest request, CancellationToken ct)
     {
         // Validate request
-        if (!new[] { Roles.Standard, Roles.Enterprise }.Contains(request.Plan))
+        if (!Enum.IsDefined(typeof(Roles), request.Plan))
             return Error.ServerError("Invalid plan selected.");
         
         var userResult = await userService.GetUser();

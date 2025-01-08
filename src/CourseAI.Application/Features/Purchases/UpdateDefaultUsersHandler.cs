@@ -17,7 +17,7 @@ public class UpdateDefaultUsersHandler(AppDbContext dbContext, IRoleService role
     public async ValueTask<OneOf<Unit, Error>> Handle(UpdateDefaultUsersRequest request, CancellationToken ct)
     {
         // Validate request
-        if (!new[] { Roles.User }.Contains(request.Plan))
+        if (!Enum.IsDefined(typeof(Roles), request.Plan))
             return Error.ServerError("Invalid plan selected.");
 
         var users = await dbContext.Users.ToListAsync(cancellationToken: ct);

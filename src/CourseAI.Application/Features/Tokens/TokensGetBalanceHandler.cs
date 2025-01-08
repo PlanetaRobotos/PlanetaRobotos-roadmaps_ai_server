@@ -21,7 +21,7 @@ public class TokensGetBalanceHandler(IUserService userService, UserManager<User>
         
         var roles = await userManager.GetRolesAsync(user);
 
-        if (roles.Contains(Roles.Standard) || roles.Contains(Roles.Enterprise))
+        if (roles.Contains(Roles.Standard.ToString()) || roles.Contains(Roles.Standard.ToString()))
         {
             return SharedConstants.InfinityValue;
         }

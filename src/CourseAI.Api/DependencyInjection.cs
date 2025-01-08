@@ -7,6 +7,7 @@ using CourseAI.Api.Swagger;
 using CourseAI.Core.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.Net.Http.Headers;
 
 namespace CourseAI.Api;
 
@@ -20,13 +21,19 @@ public static class DependencyInjection
         services.Configure<SwaggerConfigurationOptions>(configuration.GetSection(ConfigSectionNames.Swagger).Bind);
 
         services.AddControllers(mvc =>
-        {
-            mvc.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseNamingConvention()));
-            mvc.AddFromBodyOrRouteModelBinder(services);
-        }).AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(new CustomJsonStringEnumConverter());
-        });
+            {
+                mvc.Conventions.Add(new RouteTokenTransformerConvention(new KebabCaseNamingConvention()));
+                mvc.AddFromBodyOrRouteModelBinder(services);
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new CustomJsonStringEnumConverter());
+            })
+            .AddFormatterMappings(options =>
+            {
+                options.SetMediaTypeMappingForFormat("form",
+                    MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded"));
+            });
 
         services.Configure<ApiBehaviorOptions>(options => { options.SuppressModelStateInvalidFilter = true; });
 
