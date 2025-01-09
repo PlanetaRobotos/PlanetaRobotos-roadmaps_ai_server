@@ -40,7 +40,7 @@ public class RoadmapCreateHandler(
             
             var roles = await userManager.GetRolesAsync(user);
 
-            if (!roles.Contains(Roles.Standard.ToString().ToString()) && !roles.Contains(Roles.Standard.ToString().ToString()))
+            if (!roles.Contains(Roles.standard.ToString().ToString()) && !roles.Contains(Roles.standard.ToString().ToString()))
             {
                 // Operate on tokens
                 if (user.Tokens < coursePrice)

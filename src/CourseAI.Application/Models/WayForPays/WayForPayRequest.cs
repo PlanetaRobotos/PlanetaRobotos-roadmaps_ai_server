@@ -11,5 +11,7 @@
     public string[] ProductName { get; set; } = Array.Empty<string>();
     public decimal[] ProductPrice { get; set; } = Array.Empty<decimal>();
     public int[] ProductCount { get; set; } = Array.Empty<int>();
+    public string? ClientEmail { get; set; }
     public string ServiceUrl { get; set; } = string.Empty;
+    public string ReturnUrl { get; set; } = string.Empty;
 }

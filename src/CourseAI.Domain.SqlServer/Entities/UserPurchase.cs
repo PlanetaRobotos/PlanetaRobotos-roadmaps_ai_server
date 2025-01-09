@@ -12,6 +12,7 @@ public class UserPurchase
     public string OrderReference { get; set; } = string.Empty;
 
     public Roles Role { get; set; }
+    public string? ActiveEmail { get; set; }
 
     internal sealed class UserPurchaseConfiguration : IEntityTypeConfiguration<UserPurchase>
     {

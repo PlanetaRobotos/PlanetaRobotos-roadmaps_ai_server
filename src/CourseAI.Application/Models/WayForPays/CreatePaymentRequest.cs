@@ -1,4 +1,7 @@
-﻿public class CreatePaymentRequest
+﻿namespace CourseAI.Application.Models.WayForPays;
+
+public class CreatePaymentRequest
 {
     public string PlanType { get; set; } = string.Empty;
+    public string? Email { get; set; } = string.Empty;
 }

@@ -18,4 +18,9 @@ public static class SharedExtensions
 
         return parts[0];
     }
+    
+    public static bool IsDefinedIgnoreCase<TEnum>(this TEnum enumType, string value) where TEnum : Enum
+    {
+        return Enum.GetNames(typeof(TEnum)).Any(e => e.Equals(value, StringComparison.OrdinalIgnoreCase));
+    }
 }

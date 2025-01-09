@@ -25,7 +25,7 @@ public class RefillTokensHandler(UserManager<User> userManager, IUserService use
         
         var roles = await userManager.GetRolesAsync(user);
 
-        if (roles.Contains(Roles.Standard.ToString()) || roles.Contains(Roles.Standard.ToString()))
+        if (roles.Contains(Roles.standard.ToString()) || roles.Contains(Roles.standard.ToString()))
             return Error.ServerError("You need to have a plan to refill tokens.");
         
         user.Tokens += request.Amount;

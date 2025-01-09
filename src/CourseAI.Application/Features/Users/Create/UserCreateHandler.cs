@@ -24,7 +24,7 @@ public class UserCreateHandler(
             return user.Adapt<UserModel>();
         }
 
-        user = await userService.CreateUser(request.Email, false, Roles.User.ToString());
+        user = await userService.CreateUser(request.Email, false, Roles.user.ToString());
         if (user == null)
         {
             return Error.ServerError("Failed to create user.");

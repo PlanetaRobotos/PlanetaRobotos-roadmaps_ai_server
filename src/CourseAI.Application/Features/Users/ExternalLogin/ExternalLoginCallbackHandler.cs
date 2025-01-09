@@ -41,7 +41,7 @@ public class ExternalLoginCallbackHandler(
             var user = await userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                user = await userService.CreateUser(email, true, Roles.User.ToString());
+                user = await userService.CreateUser(email, true, Roles.user.ToString());
                 if (user == null)
                     return Error.ServerError("Failed to create user.");
             }

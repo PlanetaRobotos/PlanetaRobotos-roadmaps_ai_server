@@ -2,8 +2,8 @@
 
 public enum Roles
 {
-    Standard,
-    Enterprise,
-    User,
-    Admin
+    standard,
+    enterprise,
+    user,
+    admin
 }

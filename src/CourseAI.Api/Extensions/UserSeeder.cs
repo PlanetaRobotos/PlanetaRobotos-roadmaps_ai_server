@@ -29,7 +29,7 @@ public static class UserSeeder
             if (createAdminResult.Succeeded)
             {
                 // Assign Admin role
-                var addRoleResult = await userManager.AddToRoleAsync(newAdmin, Roles.Admin.ToString());
+                var addRoleResult = await userManager.AddToRoleAsync(newAdmin, Roles.admin.ToString());
                 if (!addRoleResult.Succeeded)
                 {
                     throw new Exception("Failed to assign Admin role to the admin user.");
@@ -43,9 +43,9 @@ public static class UserSeeder
         else
         {
             // Ensure the user has the Admin role
-            if (!await userManager.IsInRoleAsync(adminUser, Roles.Admin.ToString()))
+            if (!await userManager.IsInRoleAsync(adminUser, Roles.admin.ToString()))
             {
-                await userManager.AddToRoleAsync(adminUser, Roles.Admin.ToString());
+                await userManager.AddToRoleAsync(adminUser, Roles.admin.ToString());
             }
         }
     }
