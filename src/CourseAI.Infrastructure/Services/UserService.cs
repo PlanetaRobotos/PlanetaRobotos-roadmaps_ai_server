@@ -16,7 +16,7 @@ public class UserService(
     IRoleService roleService,
     IHttpContextAccessor httpContextAccessor) : IUserService
 {
-    public async Task<User?> CreateUser(string email, bool emailConfirmed, string? role, int tokensAmount)
+    public async Task<User?> CreateUser(string email, bool emailConfirmed, string[]? roles, int tokensAmount)
     {
         var user = new User
         {
@@ -36,12 +36,13 @@ public class UserService(
                 return null;
             }
 
-            if (role != null)
-            {
-                var assignResult = await roleService.AssignRoleAsync(user.Id, role);
-                if (!assignResult)
-                    throw new Exception($"Failed to assign role: {role}");
-            }
+            if (roles != null)
+                foreach (var role in roles)
+                {
+                    var assignResult = await roleService.AssignRoleAsync(user.Id, role);
+                    if (!assignResult)
+                        throw new Exception($"Failed to assign role: {role}");
+                }
 
             if (tokensAmount > 0)
             {

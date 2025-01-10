@@ -22,7 +22,7 @@ public static class UserSeeder
             {
                 UserName = "admin",
                 Email = adminEmail,
-                EmailConfirmed = true // Set to true if email confirmation is not required
+                EmailConfirmed = true
             };
 
             var createAdminResult = await userManager.CreateAsync(newAdmin, adminPassword);

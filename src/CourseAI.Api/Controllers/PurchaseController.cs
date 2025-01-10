@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using CourseAI.Api.Core;
 using CourseAI.Api.Extensions;
+using CourseAI.Application.Extensions;
 using CourseAI.Application.Features.Purchases;
+using CourseAI.Application.Models;
 using CourseAI.Application.Models.WayForPays;
 using CourseAI.Application.Services;
 using CourseAI.Core.Security;
@@ -23,7 +25,9 @@ public class PurchaseController(
     IUserService userService,
     IRoleService roleService,
     AppDbContext dbContext,
-    UserManager<User> userManager) : V1Controller
+    UserManager<User> userManager,
+    IJwtProvider jwtProvider
+    ) : V1Controller
 {
     [HttpPost("create")]
     public IActionResult CreatePayment([FromBody] CreatePaymentRequest request)
@@ -32,14 +36,14 @@ public class PurchaseController(
         var orderReference = $"ORDER_{DateTime.Now:yyyyMMddHHmmss}";
 
         if (!Enum.IsDefined(typeof(Roles), request.PlanType))
-            return BadRequest($"Invalid plan selected. PlanType: {request.PlanType}");
+            throw new Exception($"Invalid plan selected. PlanType: {request.PlanType}");
 
         var userPurchase = new UserPurchase
         {
             Id = Guid.NewGuid(),
             CreatedOnUtc = utcNow,
             OrderReference = orderReference,
-            Role = Enum.Parse<Roles>(request.PlanType),
+            Role = Enum.Parse<Roles>(request.PlanType, true),
             ActiveEmail = request.Email
         };
 
@@ -60,7 +64,7 @@ public class PurchaseController(
             OrderTimeout = "49000",
             ProductName =
             [
-                "standard Plan"
+                $"Lifetime Access to Levenue MiniCourses ({request.PlanType.FirstLetterToUpper()} Plan)"
             ],
             ProductPrice =
             [
@@ -91,18 +95,40 @@ public class PurchaseController(
             productName = wayforpayRequest.ProductName,
             productPrice = wayforpayRequest.ProductPrice,
             productCount = wayforpayRequest.ProductCount,
+            clientEmail = wayforpayRequest.ClientEmail,
             serviceUrl = wayforpayRequest.ServiceUrl,
             returnUrl = wayforpayRequest.ReturnUrl
         });
     }
+    
+    [HttpPost("login-by-payment-details")]
+    public async Task<IActionResult> LoginByPaymentDetails([FromBody] PaymentLoginRequest request)
+    {
+        var userPurchase = dbContext.UserPurchases.FirstOrDefault(x => x.OrderReference == request.OrderReference);
+        if (userPurchase == null)
+            return NotFound("User purchase not found.");
+        if (userPurchase.ActiveEmail == null)
+            return NotFound("User email not found.");
+        
+        var user = await userManager.FindByEmailAsync(userPurchase.ActiveEmail);
+        if (user == null)
+            return NotFound("User not found.");
+
+        var jwtToken = jwtProvider.Create(user);
+        dbContext.UserPurchases.Remove(userPurchase);
+        await dbContext.SaveChangesAsync();
+        
+        return Ok(new { token = jwtToken });
+    }
 
     [HttpPost("callback")]
-    [Authorize]
     [Consumes("application/x-www-form-urlencoded")]
     public async Task<IActionResult> HandleCallback()
     {
         var merchantSecretKey = configuration["WayForPay:MerchantKey"];
         WayForPayResponse? response = null;
+        var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var status = "accept";
 
         try
         {
@@ -115,7 +141,7 @@ public class PurchaseController(
             if (string.IsNullOrEmpty(jsonString))
             {
                 Logger.LogWarning("No JSON data received");
-                return BadRequest("Invalid payload");
+                throw new Exception("Invalid payload");
             }
 
             response = JsonSerializer.Deserialize<WayForPayResponse>(jsonString);
@@ -123,7 +149,7 @@ public class PurchaseController(
             if (response == null)
             {
                 Logger.LogWarning("Failed to deserialize response");
-                return BadRequest("Invalid payload format");
+                throw new Exception("Invalid payload format");
             }
 
             Logger.LogInformation("Deserialized response: {@Response}", response);
@@ -132,13 +158,13 @@ public class PurchaseController(
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
                 Logger.LogError("Model binding failed: {Errors}", errors);
-                return BadRequest("Invalid callback payload.");
+                throw new Exception("Invalid callback payload.");
             }
 
             if (string.IsNullOrEmpty(response.TransactionStatus))
             {
                 Logger.LogError("Transaction status is missing");
-                return BadRequest("Transaction status is missing");
+                throw new Exception("Transaction status is missing");
             }
 
             var userPurchase = dbContext.UserPurchases.FirstOrDefault(x => x.OrderReference == response.OrderReference);
@@ -146,7 +172,7 @@ public class PurchaseController(
             {
                 Logger.LogError("User purchase not found for order reference {OrderReference}",
                     response.OrderReference);
-                return BadRequest("User purchase not found.");
+                throw new Exception("User purchase not found.");
             }
 
             var planType = userPurchase.Role.ToString();
@@ -158,34 +184,37 @@ public class PurchaseController(
                         $"Payment for order {response.OrderReference} was successful. PlanType: {planType}");
 
                     if (!Enum.IsDefined(typeof(Roles), planType))
-                        return BadRequest($"Invalid plan selected. PlanType: {planType}");
-
+                        throw new Exception($"Invalid plan selected. PlanType: {planType}");
+                    
+                    User? user;
+                    // user had no email before
                     if (userPurchase.ActiveEmail == null)
                     {
                         if (response.Email == null)
-                        {
-                            return BadRequest("Email is missing");
-                        }
+                            throw new Exception("response email is missing");
 
-                        var user = await userService.CreateUser(response.Email, false, planType);
+                        user = await userService.CreateUser(response.Email, false, [Roles.user.ToString(), planType]);
                         if (user == null)
                         {
-                            return BadRequest("Failed to create user.");
+                            throw new Exception("Failed to create user.");
                         }
+                        
+                        Logger.LogInformation($"User {user.Email} created with role {planType}");
+                        userPurchase.ActiveEmail = response.Email;
+                        await dbContext.SaveChangesAsync();
                     }
                     else
                     {
-                        var user = await userManager.FindByEmailAsync(userPurchase.ActiveEmail);
+                        user = await userManager.FindByEmailAsync(userPurchase.ActiveEmail);
                         if (user == null)
-                            return BadRequest($"User not found, email: {userPurchase.ActiveEmail}");
+                            throw new Exception($"User not found, email: {userPurchase.ActiveEmail}");
 
                         var assignResult = await roleService.AssignRoleAsync(user.Id, planType);
                         if (!assignResult)
-                            return BadRequest($"Failed to assign role.");
+                            throw new Exception($"Failed to assign role.");
 
                         Logger.LogInformation($"Role {planType} assigned to user {user.Email}");
                     }
-
                     break;
                 case "declined":
                     Logger.LogInformation($"Payment for order {response.OrderReference} was declined");
@@ -195,15 +224,12 @@ public class PurchaseController(
                     break;
             }
 
-            var time = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-            var status = "accept";
-
             var signatureString = $"{response.OrderReference};{status};{time}";
 
-            Logger.LogInformation($"Signature string: {signatureString}, Secret Key: {merchantSecretKey}");
+            Logger.LogInformation($"Signature string: {signatureString}: {merchantSecretKey}");
 
             var signature = CalculateHmac(signatureString, merchantSecretKey);
-
+            
             return Ok(new
             {
                 orderReference = response.OrderReference,
@@ -216,14 +242,13 @@ public class PurchaseController(
         {
             Logger.LogError(ex, "Error processing WayForPay callback");
 
-            var time = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
-            const string status = "failure";
-
-            // Even for failures, we need to sign the response
             var signatureString = $"{response?.OrderReference ?? ""};{status};{time}";
             var signature = CalculateHmac(signatureString, merchantSecretKey);
 
-            return StatusCode(500, new
+            Logger.LogInformation(
+                $"Signature string: {signatureString}, signature: {signature}, secret: {merchantSecretKey}");
+
+            return Ok(new
             {
                 orderReference = response?.OrderReference ?? "",
                 status = status,

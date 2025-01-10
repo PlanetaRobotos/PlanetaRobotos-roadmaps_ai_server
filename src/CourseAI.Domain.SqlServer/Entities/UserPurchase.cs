@@ -1,4 +1,5 @@
-﻿using CourseAI.Core.Security;
+﻿using CourseAI.Core.Constants;
+using CourseAI.Core.Security;
 using CourseAI.Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -20,7 +21,7 @@ public class UserPurchase
         {
             builder.ToTable($"{nameof(UserPurchase)}s").HasKey(x => x.Id);
             builder.Property(x => x.OrderReference).HasMaxLength(255).IsRequired();
-            builder.Property(x => x.Role).IsRequired();
+            builder.Property(e => e.Role).HasMaxLength(StringLimits._50).IsRequired();
         }
     }
 }

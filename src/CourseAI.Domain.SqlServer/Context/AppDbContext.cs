@@ -1,4 +1,5 @@
 using CourseAI.Core.Enums;
+using CourseAI.Core.Security;
 using CourseAI.Domain.Entities;
 using CourseAI.Domain.Entities.Common;
 using CourseAI.Domain.Entities.Identity;
@@ -55,6 +56,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         configurationBuilder.ApplyUtcDateTimeConversions();
 
         configurationBuilder.Properties<ContactType>().HaveConversion<EnumToStringConverter<ContactType>>();
+        configurationBuilder.Properties<Roles>().HaveConversion<EnumToStringConverter<Roles>>();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

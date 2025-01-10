@@ -43,7 +43,8 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
         {
             Id = user.Id,
             Email = user.Email,
-            FirstName = user.FirstName
+            FirstName = user.FirstName,
+            EmailConfirmed = user.EmailConfirmed
         };
     
         return Ok(userModel);
@@ -135,15 +136,24 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
     }
     
     [HttpGet("roles")]
+    [Authorize]
     public async Task<IActionResult> GetUserRoles()
     {
-        var userResult = await userService.GetUser();
-        var user = userResult.Match(
-            user => user,
-            error => throw new Exception(error.Message)
-        );
+        try
+        {
+            var userResult = await userService.GetUser();
+            var user = userResult.Match(
+                user => user,
+                error => throw new Exception(error.Message)
+            );
 
-        var roles = await userManager.GetRolesAsync(user);
-        return Ok(new { Roles = roles });
+            var roles = await userManager.GetRolesAsync(user);
+            return Ok(new { Roles = roles });
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

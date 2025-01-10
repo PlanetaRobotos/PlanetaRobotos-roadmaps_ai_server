@@ -23,4 +23,12 @@ public static class SharedExtensions
     {
         return Enum.GetNames(typeof(TEnum)).Any(e => e.Equals(value, StringComparison.OrdinalIgnoreCase));
     }
+    
+    public static string FirstLetterToUpper(this string str)
+    {
+        if (string.IsNullOrEmpty(str))
+            return str;
+
+        return char.ToUpper(str[0]) + str.Substring(1);
+    }
 }
