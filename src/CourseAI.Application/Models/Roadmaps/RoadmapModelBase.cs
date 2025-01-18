@@ -28,6 +28,8 @@ public abstract class RoadmapModelBase
     public int? Likes { get; set; }
 
     public IList<RoadmapModuleModel> Modules { get; set; } = new List<RoadmapModuleModel>();
+    
+    public string? ThumbnailUrl { get; set; }
 
     /// <summary>
     /// Configures base validation rules.

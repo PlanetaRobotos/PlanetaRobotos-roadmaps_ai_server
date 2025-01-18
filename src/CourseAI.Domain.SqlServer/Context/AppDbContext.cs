@@ -1,6 +1,7 @@
 using CourseAI.Core.Enums;
 using CourseAI.Core.Security;
 using CourseAI.Domain.Entities;
+using CourseAI.Domain.Entities.Categories;
 using CourseAI.Domain.Entities.Common;
 using CourseAI.Domain.Entities.Identity;
 using CourseAI.Domain.Entities.Roadmaps;
@@ -33,6 +34,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<TokenTransaction> TokenTransactions { get; set; }
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
     public DbSet<UserPurchase> UserPurchases { get; set; }
+    
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<CategoryCourse> CategoryCourses { get; set; }
+    public DbSet<CategoryRelation> CategoryRelations { get; set; }
+    public DbSet<CourseType> CourseTypes { get; set; }
+    public DbSet<CourseTypeRelation> CourseTypeRelations { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {

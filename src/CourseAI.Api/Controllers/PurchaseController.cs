@@ -59,7 +59,7 @@ public class PurchaseController(
             MerchantDomainName = "levenue.tech",
             OrderReference = orderReference,
             OrderDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-            Amount = 1,
+            Amount = 29,
             Currency = "USD",
             OrderTimeout = "49000",
             ProductName =
@@ -68,7 +68,7 @@ public class PurchaseController(
             ],
             ProductPrice =
             [
-                45
+                29
             ],
             ProductCount =
             [
@@ -107,6 +107,15 @@ public class PurchaseController(
         var userPurchase = dbContext.UserPurchases.FirstOrDefault(x => x.OrderReference == request.OrderReference);
         if (userPurchase == null)
             return NotFound("User purchase not found.");
+        
+        // user return from payment page without payment
+        if (!userPurchase.IsActivated)
+        {
+            dbContext.UserPurchases.Remove(userPurchase);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+        
         if (userPurchase.ActiveEmail == null)
             return NotFound("User email not found.");
         
@@ -201,7 +210,6 @@ public class PurchaseController(
                         
                         Logger.LogInformation($"User {user.Email} created with role {planType}");
                         userPurchase.ActiveEmail = response.Email;
-                        await dbContext.SaveChangesAsync();
                     }
                     else
                     {
@@ -215,6 +223,9 @@ public class PurchaseController(
 
                         Logger.LogInformation($"Role {planType} assigned to user {user.Email}");
                     }
+                    
+                    userPurchase.IsActivated = true;
+                    await dbContext.SaveChangesAsync();
                     break;
                 case "declined":
                     Logger.LogInformation($"Payment for order {response.OrderReference} was declined");

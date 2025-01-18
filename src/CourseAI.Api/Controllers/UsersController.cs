@@ -43,7 +43,7 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
         {
             Id = user.Id,
             Email = user.Email,
-            FirstName = user.FirstName,
+            Name = user.FirstName,
             EmailConfirmed = user.EmailConfirmed
         };
     
@@ -67,6 +67,7 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
     }
 
     [HttpPut("{id:long}")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Update(long id, UserUpdateRequest request)
     {

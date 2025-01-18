@@ -17,10 +17,195 @@ namespace CourseAI.Domain.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<string>("ColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Order");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CategoryCourse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RoadmapId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoadmapId");
+
+                    b.HasIndex("CategoryId", "Order");
+
+                    b.HasIndex("CategoryId", "RoadmapId")
+                        .IsUnique();
+
+                    b.ToTable("CategoryCourses");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CategoryRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<Guid>("ChildCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<Guid>("ParentCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildCategoryId");
+
+                    b.HasIndex("ParentCategoryId", "ChildCategoryId")
+                        .IsUnique();
+
+                    b.ToTable("CategoryRelations");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CourseType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("Order");
+
+                    b.ToTable("CourseTypes");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CourseTypeRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<Guid>("RoadmapId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("Updated")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TypeId");
+
+                    b.HasIndex("RoadmapId", "TypeId")
+                        .IsUnique();
+
+                    b.ToTable("CourseTypeRelations");
+                });
 
             modelBuilder.Entity("CourseAI.Domain.Entities.Common.Resource", b =>
                 {
@@ -167,6 +352,10 @@ namespace CourseAI.Domain.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("Bio")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -246,16 +435,16 @@ namespace CourseAI.Domain.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "66a900bc-eb32-4702-971b-882ec0977f74",
+                            ConcurrencyStamp = "44ecd088-53c5-44d8-bf1f-479c723ad6a5",
                             Created = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@mrCourseAI.dev",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@MRCourseAI.DEV",
                             NormalizedUserName = "ARKODE",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBUDLgB56b7twkHZhoBTXDCFVXEQpkJaF5WRjCyIcM3LupMZpEeRPB5BZoOhO5ZqeA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBKA7hyVxo7HTolA44pEW/Y7eL+2pI3VERYTQcWWLWxQ3km83/tYb5YLBL0D+NZOxw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "30da5247-3c6e-4c49-b24a-5dfa1b909787",
+                            SecurityStamp = "74b7ba34-4083-498d-9e41-bb828fd733a0",
                             Tokens = 0,
                             TwoFactorEnabled = false,
                             UserName = "arkode",
@@ -479,6 +668,9 @@ namespace CourseAI.Domain.Migrations
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -598,6 +790,9 @@ namespace CourseAI.Domain.Migrations
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActivated")
+                        .HasColumnType("bit");
+
                     b.Property<string>("OrderReference")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -647,6 +842,63 @@ namespace CourseAI.Domain.Migrations
                     b.HasIndex("RoadmapId");
 
                     b.ToTable("UserRoadmaps", (string)null);
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CategoryCourse", b =>
+                {
+                    b.HasOne("CourseAI.Domain.Entities.Categories.Category", "Category")
+                        .WithMany("CategoryCourses")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Roadmap", "Roadmap")
+                        .WithMany("CategoryCourses")
+                        .HasForeignKey("RoadmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Roadmap");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CategoryRelation", b =>
+                {
+                    b.HasOne("CourseAI.Domain.Entities.Categories.Category", "ChildCategory")
+                        .WithMany("ParentRelations")
+                        .HasForeignKey("ChildCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CourseAI.Domain.Entities.Categories.Category", "ParentCategory")
+                        .WithMany("ChildRelations")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ChildCategory");
+
+                    b.Navigation("ParentCategory");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CourseTypeRelation", b =>
+                {
+                    b.HasOne("CourseAI.Domain.Entities.Roadmaps.Roadmap", "Roadmap")
+                        .WithMany("CourseTypes")
+                        .HasForeignKey("RoadmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CourseAI.Domain.Entities.Categories.CourseType", "Type")
+                        .WithMany("CourseTypes")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Roadmap");
+
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("CourseAI.Domain.Entities.EmailVerificationToken", b =>
@@ -812,6 +1064,20 @@ namespace CourseAI.Domain.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.Category", b =>
+                {
+                    b.Navigation("CategoryCourses");
+
+                    b.Navigation("ChildRelations");
+
+                    b.Navigation("ParentRelations");
+                });
+
+            modelBuilder.Entity("CourseAI.Domain.Entities.Categories.CourseType", b =>
+                {
+                    b.Navigation("CourseTypes");
+                });
+
             modelBuilder.Entity("CourseAI.Domain.Entities.Identity.User", b =>
                 {
                     b.Navigation("TableSettings");
@@ -835,6 +1101,10 @@ namespace CourseAI.Domain.Migrations
 
             modelBuilder.Entity("CourseAI.Domain.Entities.Roadmaps.Roadmap", b =>
                 {
+                    b.Navigation("CategoryCourses");
+
+                    b.Navigation("CourseTypes");
+
                     b.Navigation("Modules");
 
                     b.Navigation("UserLikes");

@@ -14,6 +14,7 @@ public class UserPurchase
 
     public Roles Role { get; set; }
     public string? ActiveEmail { get; set; }
+    public bool IsActivated { get; set; }
 
     internal sealed class UserPurchaseConfiguration : IEntityTypeConfiguration<UserPurchase>
     {

@@ -40,7 +40,7 @@ public class RoadmapCreateHandler(
             
             var roles = await userManager.GetRolesAsync(user);
 
-            if (!roles.Contains(Roles.standard.ToString().ToString()) && !roles.Contains(Roles.standard.ToString().ToString()))
+            if (!roles.Contains(Roles.standard.ToString()) && !roles.Contains(Roles.standard.ToString()))
             {
                 // Operate on tokens
                 if (user.Tokens < coursePrice)
@@ -104,7 +104,7 @@ public class RoadmapCreateHandler(
 
                 var prompt = $"Generate detailed lesson content for '{lesson.Title}' as per the system format.";
 
-                var lessonAI = await contentGenerator.GenerateContentAsync(prompt, GetSystemMessage());
+                var lessonAI = await contentGenerator.GenerateContentAsync(prompt, GetLessonSystemMessage());
 
                 if (string.IsNullOrWhiteSpace(lessonAI))
                     return Error.ServerError($"Error generating content for lesson '{lesson.Title}'.");
@@ -116,6 +116,15 @@ public class RoadmapCreateHandler(
 
                 await dbContext.SaveChangesAsync(ct);
             }
+            
+            var thumbnailResult = await contentGenerator.GenerateImageAsync(roadmap.Title, true);
+            if (!thumbnailResult.Success)
+                return Error.ServerError($"{thumbnailResult.Error}");
+            
+            string? fileName = Path.GetFileNameWithoutExtension(thumbnailResult.FileName);
+            
+            roadmap.ThumbnailUrl = fileName;
+            await dbContext.SaveChangesAsync(ct);
         }
         catch (Exception ex)
         {
@@ -125,17 +134,6 @@ public class RoadmapCreateHandler(
 
         return roadmap.Adapt<RoadmapModel>();
     }
-
-    // private static int GetCourseCost(Roadmap roadmap)
-    // {
-    //     return roadmap.EstimatedDuration switch
-    //     {
-    //         15 => 10,
-    //         30 => 15,
-    //         60 => 20,
-    //         _ => 0
-    //     };
-    // }
 
     private static async Task<bool> AttachLessonContentAsync(Lesson lesson, string aiResponse, CancellationToken ct)
     {
@@ -180,7 +178,7 @@ public class RoadmapCreateHandler(
     private async Task<string?> GenerateModulesAndLessonsAsync(Roadmap roadmap)
     {
         var userPrompt =
-            $"Add modules and lessons for the roadmap '{roadmap.Title}', estimated duration in minutes: {roadmap.EstimatedDuration}.";
+            $"Add modules and lessons for the course '{roadmap.Title}', estimated duration in minutes: {roadmap.EstimatedDuration}.";
 
         var aiResponse = await contentGenerator.GenerateContentAsync(userPrompt,
             GetRoadmapSystemMessage());
@@ -230,25 +228,7 @@ public class RoadmapCreateHandler(
             return false;
         }
     }
-
-    private async Task<LessonContent?> GenerateLessonContentAsync(Lesson lesson)
-    {
-        var prompt = $"Generate detailed lesson content for '{lesson.Title}' as per the system format.";
-
-        var aiResponse = await contentGenerator.GenerateContentAsync(prompt, GetSystemMessage());
-
-        try
-        {
-            return JsonConvert.DeserializeObject<LessonContent>(aiResponse);
-        }
-        catch (JsonException ex)
-        {
-            await Console.Error.WriteLineAsync($"Failed to parse AI response: {ex.Message}");
-            return null;
-        }
-    }
-
-    private static string GetSystemMessage()
+    private static string GetLessonSystemMessage()
     {
         return """
                You are a lesson-generation assistant. Return valid JSON:
@@ -267,7 +247,7 @@ public class RoadmapCreateHandler(
                  ]
                }
 
-               If you cannot generate suitable lesson content, do not just say you're unable and explain error. 
+               If you cannot generate suitable lesson content, do not just say you're unable and explain error. Keep the output concise and clear. Lesson length should be 100-300 words. if necessary, use unordered lists
                On the topic of the lesson add: 1-2 resource links; 1 quiz question with 4 options and the correct answer index.
                """;
     }
@@ -275,9 +255,9 @@ public class RoadmapCreateHandler(
     private static string GetRoadmapSystemMessage()
     {
         return @"
-You are a roadmap-generation assistant. Return a JSON object with single-quoted keys and strings:
+You are a course-generation assistant. Return a JSON object with single-quoted keys and strings:
 {
-  'description': 'A concise summary of the roadmap topic',
+  'description': 'A concise summary of the course topic',
   'tags': [
     'tag1',
     'tag2',
@@ -302,9 +282,9 @@ You are a roadmap-generation assistant. Return a JSON object with single-quoted 
   ]
 }
 
-- If the roadmap is generated successfully, provide a meaningful **short description** for the 'description' field. Do not use ""Roadmap generated successfully.""
-- If you encounter an issue generating the roadmap, use the 'description' field to explain the issue.
-- Generate at least 1 module with at least 2 lessons, scaling up the number of modules and lessons based on 'EstimatedDuration' (1-3 modules, 2+ lessons per module).
+- If the course is generated successfully, provide a meaningful **short description** for the 'description' field. Do not use ""Course generated successfully.""
+- If you encounter an issue generating the course, use the 'description' field to explain the issue.
+- Generate at least 2 modules with at least 2 lessons, scaling up the number of modules and lessons based on 'EstimatedDuration' (2-6 modules, 2-3 lessons per module).
 - Keep the output concise and clear.
 ";
     }

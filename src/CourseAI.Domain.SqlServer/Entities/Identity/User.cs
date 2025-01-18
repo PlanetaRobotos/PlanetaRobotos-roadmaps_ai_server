@@ -18,6 +18,7 @@ public class User : IdentityUser<long>, IDateableEntity<long>
     public ICollection<UserRoadmap>? UserRoadmaps { get; init; }
     public ICollection<UserLike>? UserLikes { get; init; }
     public ICollection<UserQuiz> UserQuizzes { get; init; }
+    public string? Bio { get; set; }
     
     public Guid UserRoadmapId { get; set; }
 
@@ -31,6 +32,10 @@ public class User : IdentityUser<long>, IDateableEntity<long>
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            builder.Property(x => x.Bio)
+                .HasMaxLength(500)  // or any other reasonable limit
+                .IsRequired(false);
         }
     }
 }

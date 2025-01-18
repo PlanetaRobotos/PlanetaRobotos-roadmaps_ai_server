@@ -10,4 +10,6 @@ public static class ConfigSectionNames
     public const string Jwt = nameof(Jwt);
     public const string Identity = nameof(Identity);
     public const string Email = nameof(Email);
+    public const string S3 = nameof(S3);
+    public const string StabilityAI = nameof(StabilityAI);
 }

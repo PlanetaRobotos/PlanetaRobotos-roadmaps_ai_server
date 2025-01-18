@@ -23,7 +23,7 @@ public static class DependencyInjection
     private static void AddDbContext(this IServiceCollection services, IConfiguration configuration)
     {
         var contextFactory = new AppDbContextFactory { Configuration = configuration };
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContextFactory<AppDbContext>(options =>
         {
             contextFactory.ConfigureContextOptions(options);
         });

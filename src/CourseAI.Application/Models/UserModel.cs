@@ -9,14 +9,15 @@ public class UserModel : UserModelBase
 
 public class UserModelBase
 {
-    public string FirstName { get; set; }
+    public string Name { get; set; }
     public string Email { get; set; }
+    public string Bio { get; set; }
     public bool EmailConfirmed { get; set; }
 
     public User ToEntity() =>
         new()
         {
-            FirstName = FirstName,
+            FirstName = Name,
             Email = Email,
             EmailConfirmed = EmailConfirmed
         };

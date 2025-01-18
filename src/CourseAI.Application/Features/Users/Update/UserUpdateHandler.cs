@@ -8,7 +8,8 @@ using OneOf;
 
 namespace CourseAI.Application.Features.Users.Update;
 
-public class UserUpdateHandler(AppDbContext dbContext, UserManager<User> userManager) : IHandler<UserUpdateRequest>
+public class UserUpdateHandler(AppDbContext dbContext, UserManager<User> userManager) 
+    : IHandler<UserUpdateRequest>
 {
     public async ValueTask<OneOf<Unit, Error>> Handle(UserUpdateRequest request, CancellationToken ct)
     {
@@ -18,8 +19,8 @@ public class UserUpdateHandler(AppDbContext dbContext, UserManager<User> userMan
             return Error.NotFound<User>();
         }
 
-        user.UserName = request.UserName;
-        user.Email = request.Email;
+        user.FirstName = request.Name;
+        user.Bio = request.Bio;
 
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)

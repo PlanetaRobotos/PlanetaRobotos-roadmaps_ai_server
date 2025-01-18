@@ -19,9 +19,11 @@ public class RoadmapFilterHandler(AppDbContext dbContext) : IHandler<RoadmapFilt
             .ThenInclude(x => x.Quizzes)
             .ToArrayAsync(ct);
 
+        var roadmapModels = roadmaps.Select(c => c.Adapt<RoadmapModel>()).ToArray();
+        
         return new Filtered<RoadmapModel>
         {
-            Data = roadmaps.Select(c => c.Adapt<RoadmapModel>()).ToArray(),
+            Data = roadmapModels,
             Total = roadmaps.Length,
             Columns = null,
         };

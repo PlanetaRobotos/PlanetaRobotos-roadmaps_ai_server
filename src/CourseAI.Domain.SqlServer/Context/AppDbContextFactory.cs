@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using NeerCore.Data.EntityFramework.Design;
 using NeerCore.DependencyInjection.Extensions;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CourseAI.Domain.Context
 {
@@ -20,7 +21,8 @@ namespace CourseAI.Domain.Context
 
                 return new[]
                 {
-                    "appsettings.json", $"appsettings.{environment}.json", "appsettings.Secrets.json", $"../{GetType().Assembly.GetBaseNamespace()}.Api/appsettings.Secrets.json",
+                    "appsettings.json", $"appsettings.{environment}.json", "appsettings.Secrets.json",
+                    $"../{GetType().Assembly.GetBaseNamespace()}.Api/appsettings.Secrets.json",
                 };
             }
         }
@@ -32,7 +34,8 @@ namespace CourseAI.Domain.Context
                 if (Configuration is null)
                     return base.ConnectionString;
 
-                return Environment.GetEnvironmentVariable("ConnectionStrings__Default") ?? Configuration.GetConnectionString(SelectedConnectionName);
+                return Environment.GetEnvironmentVariable("ConnectionStrings__Default") ??
+                       Configuration.GetConnectionString(SelectedConnectionName);
             }
         }
 
@@ -40,10 +43,8 @@ namespace CourseAI.Domain.Context
 
         public override void ConfigureContextOptions(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(ConnectionString, options =>
-            {
-                options.MigrationsAssembly(MigrationsAssembly);
-            });
+            optionsBuilder.UseSqlServer(ConnectionString, options => 
+                    options.MigrationsAssembly(MigrationsAssembly));
         }
     }
 }
