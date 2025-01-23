@@ -106,6 +106,11 @@ public sealed record ExplorePageModel
     public List<RoadmapModel> BetterYouCourses { get; init; } = new();
 }
 
+public sealed record WelcomePageModel
+{
+    public List<RoadmapModel> WelcomeCourses { get; init; } = new();
+}
+
 public sealed record PositionRequest
 {
     public int? Position { get; init; }

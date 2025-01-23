@@ -16,6 +16,7 @@ public class UserRoadmapFilterHandler(AppDbContext dbContext) : IHandler<UserRoa
         var UserRoadmaps = await dbContext.UserRoadmaps
             .Where(ur => ur.UserId == request.UserId)
             .Include(ur => ur.Roadmap)
+            .OrderByDescending(r => r.Roadmap.Created)
             .ToArrayAsync(ct);
         
         return new Filtered<UserRoadmapModel>

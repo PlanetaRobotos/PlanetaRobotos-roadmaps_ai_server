@@ -37,28 +37,28 @@ public class RoadmapCreateHandler(
                 user => user,
                 error => throw new Exception(error.Message)
             );
-            
+
             var roles = await userManager.GetRolesAsync(user);
 
-            if (!roles.Contains(Roles.standard.ToString()) && !roles.Contains(Roles.standard.ToString()))
+            if (!roles.Contains(Roles.creator.ToString()))
             {
                 // Operate on tokens
                 if (user.Tokens < coursePrice)
                     return Error.ServerError("Insufficient tokens to create the course.");
 
                 user.Tokens -= coursePrice;
-                
+
                 var result = await userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                     return Error.ServerError("Failed to update user tokens.");
-                
+
                 var tokenTransaction = new TokenTransaction
                 {
                     UserId = Convert.ToInt64(user.Id),
                     Amount = -coursePrice,
                     TransactionType = TransactionType.CourseGeneration,
                 };
-                
+
                 dbContext.TokenTransactions.Add(tokenTransaction);
                 await dbContext.SaveChangesAsync(ct);
             }
@@ -107,7 +107,8 @@ public class RoadmapCreateHandler(
                 var lessonAI = await contentGenerator.GenerateContentAsync(prompt, GetLessonSystemMessage());
 
                 if (string.IsNullOrWhiteSpace(lessonAI))
-                    return Error.ServerError($"Error generating content for lesson '{lesson.Title}'.");
+                    return Error.ServerError(
+                        $"Error generating content for lesson. Title: '{lesson.Title}'. Content: '{lesson.Content}, Quizzes: '{lesson.Quizzes}'.");
 
                 var attached = await AttachLessonContentAsync(lesson, lessonAI, ct);
 
@@ -116,15 +117,18 @@ public class RoadmapCreateHandler(
 
                 await dbContext.SaveChangesAsync(ct);
             }
-            
-            var thumbnailResult = await contentGenerator.GenerateImageAsync(roadmap.Title, true);
-            if (!thumbnailResult.Success)
-                return Error.ServerError($"{thumbnailResult.Error}");
-            
-            string? fileName = Path.GetFileNameWithoutExtension(thumbnailResult.FileName);
-            
-            roadmap.ThumbnailUrl = fileName;
-            await dbContext.SaveChangesAsync(ct);
+
+            if (request.WithThumbnail)
+            {
+                var thumbnailResult = await contentGenerator.GenerateImageAsync(roadmap.Title, true);
+                if (!thumbnailResult.Success)
+                    return Error.ServerError($"{thumbnailResult.Error}");
+
+                string? fileName = Path.GetFileNameWithoutExtension(thumbnailResult.FileName);
+
+                roadmap.ThumbnailUrl = fileName;
+                await dbContext.SaveChangesAsync(ct);
+            }
         }
         catch (Exception ex)
         {
@@ -228,27 +232,35 @@ public class RoadmapCreateHandler(
             return false;
         }
     }
+
     private static string GetLessonSystemMessage()
     {
         return """
-               You are a lesson-generation assistant. Return valid JSON:
+               You are a professional course creation assistant. Your task is to generate educational content in the following JSON format:
                {
                  "content": {
-                   "mainContent": "Content...",
-                   "resources": ["https://example.com"],
+                   "mainContent": "Write natural educational content using HTML tags only when meaningful. Use <h2> for titles, <strong> for important terms, <blockquote> A complete insight about the topic goes here. For short technical code examples, wrap in:</p><pre><code class='language-javascript'>code example</code></pre>, <ul> OR <ol> for lists (never mix, use <ul> for features, <ol> for steps). Do noy use links or images.",
+                   "resources": ["Title 1 | Description 1 | URL 1", "Title 2 | Description 2 | URL 2"],
                    "examples": []
                  },
-                 "quizzes": [
-                   {
-                     "question": "Question...",
-                     "answers": ["Option 1", "Option 2", "Option 3", "Option 4"],
-                     "correctAnswerIndex": correctAnswerIndex
-                   }
-                 ]
+                 "quiz": {
+                   "question": "Clear, focused question testing key concept",
+                   "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                   "correctIndex": 0
+                 }
                }
 
-               If you cannot generate suitable lesson content, do not just say you're unable and explain error. Keep the output concise and clear. Lesson length should be 100-300 words. if necessary, use unordered lists
-               On the topic of the lesson add: 1-2 resource links; 1 quiz question with 4 options and the correct answer index.
+               Guidelines:
+               - mainContent length: 200-500 words. Natural writing style, tags only when meaningful
+               - Keep content focused and practical
+               - Avoid special characters or complex Unicode
+               - Use Tiptap-compatible HTML for mainContent
+               - Use code blocks only for technical examples. If topic is not technical, do not use code blocks. Code format <pre><code class='language-X'>
+               - No \\n or escaped characters
+               - Proper tag closing. Do not use self-closing tags and do not use <h2> with other tags. Be careful with line breaking lines, double check the format to avoid errors
+               - If you use blockquote. Each should contain the complete insights/key points, not just labels
+               - Include 1-2 relevant resources with titles. Format resources as: "Title | short Description | URL", all three parts required, use vertical bar (|) as separator in resources
+               - Create 1 quiz question with 4 clear options. Be careful to set the correct index as answer for correctIndex field
                """;
     }
 

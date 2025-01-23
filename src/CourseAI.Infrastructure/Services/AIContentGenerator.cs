@@ -1,9 +1,11 @@
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CourseAI.Application.Options;
 using CourseAI.Application.Services;
 using CourseAI.Core.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NeerCore.DependencyInjection;
 
@@ -14,9 +16,16 @@ public class AIContentGenerator(
     IHttpClientFactory httpClientFactory,
     IOptions<OpenAIOptions> options,
     IOptions<StabilityAIOptions> stabilityOptions,
-    IStorageService storageService
+    IStorageService storageService,
+    ILogger<AIContentGenerator> logger
 ) : IContentGenerator
 {
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true
+    };
+    
     private const string AIRequestUrl = "https://api.openai.com/v1/chat/completions";
     private const string StabilityUrl = "https://api.stability.ai";
     private const string ThumbnailsPath = "thumbnails";
@@ -37,7 +46,9 @@ public class AIContentGenerator(
             model = "gpt-3.5-turbo",
             messages,
             max_tokens = 2500,
-            temperature = 0.7
+            temperature = 0.3,
+            presence_penalty = 0.1, // Slight penalty to avoid repetition
+            frequency_penalty = 0.1 // Encourage diverse vocabulary
         };
 
         using var httpClient = httpClientFactory.CreateClient();
@@ -48,22 +59,19 @@ public class AIContentGenerator(
         request.Headers.Add("Authorization", $"Bearer {_apiKey}");
         request.Content = requestContent;
 
-        using var response = await httpClient.SendAsync(request);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            var error = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"OpenAI API request failed with status {response.StatusCode}: {error}");
+            using var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        
+            var result = await response.Content.ReadFromJsonAsync<OpenAiResponse>(_jsonOptions);
+            return result?.Choices?.FirstOrDefault()?.Message?.Content?.Trim() ?? string.Empty;
         }
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var openAiResponse = JsonSerializer.Deserialize<OpenAiResponse>(responseContent, new JsonSerializerOptions
+        catch (HttpRequestException ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return openAiResponse?.Choices?.FirstOrDefault()?.Message?.Content?.Trim() ?? string.Empty;
+            logger.LogError(ex, "OpenAI API request failed");
+            throw;
+        }
     }
 
     private class OpenAiResponse

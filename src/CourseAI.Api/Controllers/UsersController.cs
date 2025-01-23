@@ -44,7 +44,8 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
             Id = user.Id,
             Email = user.Email,
             Name = user.FirstName,
-            EmailConfirmed = user.EmailConfirmed
+            EmailConfirmed = user.EmailConfirmed,
+            Bio = user.Bio,
         };
     
         return Ok(userModel);
@@ -92,6 +93,15 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
         var response = await Sender.Send(request);
         return response.MatchResponse(UserRoadmaps => Ok(UserRoadmaps));
     }
+    
+    // [HttpGet("{userId:long}/roadmaps")]
+    // [ProducesResponseType<Filtered<UserRoadmapModel>>(StatusCodes.Status200OK)]
+    // public async Task<ActionResult> GetSavedRoadmaps(long userId, [FromQuery] UserRoadmapFilterRequest request)
+    // {
+    //     request.UserId = userId;
+    //     var response = await Sender.Send(request);
+    //     return response.MatchResponse(UserRoadmaps => Ok(UserRoadmaps));
+    // }
 
     [HttpGet("{userId:long}/roadmaps/{roadmapId:guid}")]
     [ProducesResponseType<UserRoadmapModel>(StatusCodes.Status200OK)]

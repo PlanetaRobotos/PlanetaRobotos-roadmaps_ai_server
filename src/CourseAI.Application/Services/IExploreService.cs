@@ -9,5 +9,6 @@ public interface IExploreService
     Task<List<RoadmapModel>> GetNewCoursesAsync(int skip, int take);
     Task<List<RoadmapModel>> GetTopCoursesAsync(int skip, int take);
     Task<List<RoadmapModel>> GetBetterYouCoursesAsync(int skip, int take);
+    Task<List<RoadmapModel>> GetWelcomeCoursesAsync(int skip, int take);
     Task<List<CategoryModel>> GetCategoriesAsync();
 }

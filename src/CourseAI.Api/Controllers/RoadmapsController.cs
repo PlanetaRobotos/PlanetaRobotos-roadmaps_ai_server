@@ -126,4 +126,19 @@ public class RoadmapsController(IContentGenerator contentGenerator, AppDbContext
         
         return Ok();
     }
+    
+    [HttpPut("{id:guid}/set-default-thumbnail")]
+    public async Task<IActionResult> SetDefaultThumbnail(Guid id, string thumbnailUrl)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
+        var roadmap = await dbContext.Roadmaps.FindAsync(id);
+        if (roadmap == null)
+            return NotFound();
+
+        roadmap.ThumbnailUrl = thumbnailUrl;
+        
+        return Ok();
+    }
 }

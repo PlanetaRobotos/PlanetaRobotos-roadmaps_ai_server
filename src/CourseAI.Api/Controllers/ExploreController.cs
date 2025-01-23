@@ -6,18 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
 
-public class ExploreController : V1Controller
+public class ExploreController(IExploreService exploreService) : V1Controller
 {
-    private readonly IExploreService _exploreService;
-
-    public ExploreController(IExploreService exploreService) =>
-        _exploreService = exploreService;
-
     [HttpGet("page")]
     [ProducesResponseType<ExplorePageModel>(StatusCodes.Status200OK)]
     public Task<ExplorePageModel> GetExplorePage()
     {
-        return _exploreService.GetExplorePageAsync();
+        return exploreService.GetExplorePageAsync();
     }
 
     [HttpGet("new")]
@@ -25,7 +20,7 @@ public class ExploreController : V1Controller
         [FromQuery] int skip,
         [FromQuery] int take)
     {
-        return _exploreService.GetNewCoursesAsync(skip, take);
+        return exploreService.GetNewCoursesAsync(skip, take);
     }
 
     [HttpGet("top")]
@@ -33,7 +28,7 @@ public class ExploreController : V1Controller
         [FromQuery] int skip,
         [FromQuery] int take)
     {
-        return _exploreService.GetTopCoursesAsync(skip, take);
+        return exploreService.GetTopCoursesAsync(skip, take);
     }
 
     [HttpGet("better-you")]
@@ -41,6 +36,6 @@ public class ExploreController : V1Controller
         [FromQuery] int skip,
         [FromQuery] int take)
     {
-        return _exploreService.GetBetterYouCoursesAsync(skip, take);
+        return exploreService.GetBetterYouCoursesAsync(skip, take);
     }
 }

@@ -18,7 +18,7 @@ namespace CourseAI.Application.Features.Users.MagicLink
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == request.TokenId, ct);
 
-            if (verificationToken == null || verificationToken.ExpiresOnUtc < DateTime.UtcNow || verificationToken.User.EmailConfirmed)
+            if (verificationToken == null || verificationToken.ExpiresOnUtc < DateTime.UtcNow)
             {
                 return Error.NotFound("Token not found");
             }

@@ -15,6 +15,7 @@ public class ExploreService : IExploreService
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
     private const string BetterYouTypeName = "BetterYou2025";
+    private const string WelcomeTypeName = "Welcome";
 
     public ExploreService(AppDbContext context, IDbContextFactory<AppDbContext> contextFactory)
     {
@@ -104,6 +105,17 @@ public class ExploreService : IExploreService
             .OrderByDescending(r => r.Created)
             .Skip(skip)
             .Take(take)
+            .ProjectToType<RoadmapModel>()
+            .ToListAsync();
+    }
+
+    public Task<List<RoadmapModel>> GetWelcomeCoursesAsync(int skip, int take)
+    {
+        return _context.Roadmaps
+            .Where(r => r.CourseTypes
+                .Any(rt => rt.Type.Name == WelcomeTypeName))
+            .OrderByDescending(r => r.Created)
+            .Take(10)
             .ProjectToType<RoadmapModel>()
             .ToListAsync();
     }

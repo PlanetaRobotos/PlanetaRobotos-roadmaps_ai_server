@@ -19,6 +19,7 @@ public class UserModelBase
         {
             FirstName = Name,
             Email = Email,
-            EmailConfirmed = EmailConfirmed
+            EmailConfirmed = EmailConfirmed,
+            Bio = Bio
         };
 }

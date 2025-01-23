@@ -2,7 +2,8 @@
 
 public enum Roles
 {
-    standard,
+    creator,
+    studio,
     enterprise,
     user,
     admin

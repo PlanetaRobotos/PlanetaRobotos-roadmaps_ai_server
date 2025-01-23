@@ -27,7 +27,7 @@ public class PurchaseController(
     AppDbContext dbContext,
     UserManager<User> userManager,
     IJwtProvider jwtProvider
-    ) : V1Controller
+) : V1Controller
 {
     [HttpPost("create")]
     public IActionResult CreatePayment([FromBody] CreatePaymentRequest request)
@@ -52,6 +52,8 @@ public class PurchaseController(
 
         var merchantAccount = configuration["WayForPay:MerchantAccount"];
         var clientPath = configuration["Client:Url"];
+        var price = request.PlanPrice;
+
         var wayforpayRequest = new WayForPayRequest
         {
             MerchantAccount = merchantAccount,
@@ -59,21 +61,15 @@ public class PurchaseController(
             MerchantDomainName = "levenue.tech",
             OrderReference = orderReference,
             OrderDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-            Amount = 29,
+            Amount = price,
             Currency = "USD",
             OrderTimeout = "49000",
             ProductName =
             [
-                $"Lifetime Access to Levenue MiniCourses ({request.PlanType.FirstLetterToUpper()} Plan)"
+                $"Access forever to Levenue MiniCourses. {request.PlanType.FirstLetterToUpper()} Plan: {request.PlanDescription}"
             ],
-            ProductPrice =
-            [
-                29
-            ],
-            ProductCount =
-            [
-                1
-            ],
+            ProductPrice = [price],
+            ProductCount = [1],
             ClientEmail = request.Email,
             ServiceUrl = "https://app-241207145936.azurewebsites.net/v1/purchase/callback",
             ReturnUrl = $"{clientPath}/callback"
@@ -100,14 +96,14 @@ public class PurchaseController(
             returnUrl = wayforpayRequest.ReturnUrl
         });
     }
-    
+
     [HttpPost("login-by-payment-details")]
     public async Task<IActionResult> LoginByPaymentDetails([FromBody] PaymentLoginRequest request)
     {
         var userPurchase = dbContext.UserPurchases.FirstOrDefault(x => x.OrderReference == request.OrderReference);
         if (userPurchase == null)
             return NotFound("User purchase not found.");
-        
+
         // user return from payment page without payment
         if (!userPurchase.IsActivated)
         {
@@ -115,10 +111,10 @@ public class PurchaseController(
             await dbContext.SaveChangesAsync();
             return Ok();
         }
-        
+
         if (userPurchase.ActiveEmail == null)
             return NotFound("User email not found.");
-        
+
         var user = await userManager.FindByEmailAsync(userPurchase.ActiveEmail);
         if (user == null)
             return NotFound("User not found.");
@@ -126,7 +122,7 @@ public class PurchaseController(
         var jwtToken = jwtProvider.Create(user);
         dbContext.UserPurchases.Remove(userPurchase);
         await dbContext.SaveChangesAsync();
-        
+
         return Ok(new { token = jwtToken });
     }
 
@@ -194,7 +190,7 @@ public class PurchaseController(
 
                     if (!Enum.IsDefined(typeof(Roles), planType))
                         throw new Exception($"Invalid plan selected. PlanType: {planType}");
-                    
+
                     User? user;
                     // user had no email before
                     if (userPurchase.ActiveEmail == null)
@@ -207,7 +203,7 @@ public class PurchaseController(
                         {
                             throw new Exception("Failed to create user.");
                         }
-                        
+
                         Logger.LogInformation($"User {user.Email} created with role {planType}");
                         userPurchase.ActiveEmail = response.Email;
                     }
@@ -223,7 +219,7 @@ public class PurchaseController(
 
                         Logger.LogInformation($"Role {planType} assigned to user {user.Email}");
                     }
-                    
+
                     userPurchase.IsActivated = true;
                     await dbContext.SaveChangesAsync();
                     break;
@@ -240,7 +236,7 @@ public class PurchaseController(
             Logger.LogInformation($"Signature string: {signatureString}: {merchantSecretKey}");
 
             var signature = CalculateHmac(signatureString, merchantSecretKey);
-            
+
             return Ok(new
             {
                 orderReference = response.OrderReference,
