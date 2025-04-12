@@ -17,7 +17,7 @@ public class UserModelBase
     public User ToEntity() =>
         new()
         {
-            FirstName = Name,
+            Name = Name,
             Email = Email,
             EmailConfirmed = EmailConfirmed,
             Bio = Bio

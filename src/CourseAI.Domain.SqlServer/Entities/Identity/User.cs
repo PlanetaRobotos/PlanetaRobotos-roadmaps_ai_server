@@ -12,7 +12,7 @@ public class User : IdentityUser<long>, IDateableEntity<long>
     public DateTime Created { get; init; }
     public DateTime? Updated { get; init; }
 
-    public string? FirstName { get; set; }
+    public string? Name { get; set; }
     public int Tokens { get; set; }
     public ICollection<UserTableSettings>? TableSettings { get; init; }
     public ICollection<UserRoadmap>? UserRoadmaps { get; init; }
@@ -32,6 +32,10 @@ public class User : IdentityUser<long>, IDateableEntity<long>
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            // limit length of Name to 100 characters
+            builder.Property(x => x.Name)
+                .HasMaxLength(100);
             
             builder.Property(x => x.Bio)
                 .HasMaxLength(500)  // or any other reasonable limit

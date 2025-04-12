@@ -104,6 +104,7 @@ public sealed record ExplorePageModel
     public List<RoadmapModel> NewCourses { get; init; } = new();
     public List<RoadmapModel> TopCourses { get; init; } = new();
     public List<RoadmapModel> BetterYouCourses { get; init; } = new();
+    public List<RoadmapModel> NewToLevenueCourses { get; init; } = new();
 }
 
 public sealed record WelcomePageModel

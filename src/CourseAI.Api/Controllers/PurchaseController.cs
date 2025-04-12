@@ -185,8 +185,9 @@ public class PurchaseController(
             switch (response.TransactionStatus.ToLower())
             {
                 case "approved":
+                case "pending":
                     Logger.LogInformation(
-                        $"Payment for order {response.OrderReference} was successful. PlanType: {planType}");
+                        $"Payment for order {response.OrderReference} was successful. PlanType: {planType}. Status: {response.TransactionStatus}");
 
                     if (!Enum.IsDefined(typeof(Roles), planType))
                         throw new Exception($"Invalid plan selected. PlanType: {planType}");
@@ -228,6 +229,9 @@ public class PurchaseController(
                     break;
                 case "refunded":
                     Logger.LogInformation($"Payment for order {response.OrderReference} was refunded");
+                    break;
+                default:
+                    Logger.LogError($"Unknown transaction status: {response.TransactionStatus}");
                     break;
             }
 

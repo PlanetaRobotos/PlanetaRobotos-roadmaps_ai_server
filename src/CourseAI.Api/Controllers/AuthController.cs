@@ -12,7 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAI.Api.Controllers;
 
-public class AuthController(IConfiguration configuration, IJwtProvider jwtProvider, UserManager<User> userManager) : V1Controller
+public class AuthController(IConfiguration configuration, IJwtProvider jwtProvider, UserManager<User> userManager)
+    : V1Controller
 {
     [HttpPost("send-magic-link")]
     [ProducesResponseType<string>(StatusCodes.Status201Created)]
@@ -34,7 +35,7 @@ public class AuthController(IConfiguration configuration, IJwtProvider jwtProvid
                 return Redirect($"{client}/dashboard?token={token}");
             });
     }
-    
+
     [HttpPost("create-token/{userId:long}")]
     [ProducesResponseType<string>(StatusCodes.Status201Created)]
     public async Task<ActionResult<string>> CreateToken(long userId)
@@ -47,23 +48,33 @@ public class AuthController(IConfiguration configuration, IJwtProvider jwtProvid
         return Ok(token);
     }
 
-    [HttpGet("VerifyEmail", Name = "VerifyEmail")]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    public async Task<IActionResult> VerifyEmail(Guid token)
+    [HttpPost("password-login")]
+    public async Task<ActionResult> PasswordLogin(PasswordLoginRequest request)
     {
-        var response = await Sender.Send(new MagicLinkLoginRequest { TokenId = token });
+        var response = await Sender.Send(request);
+        return response.MatchResponse(
+            token => Ok(new { token }));
+    }
+
+    [HttpGet("VerifyEmail", Name = "VerifyEmail")]
+    [ProducesResponseType(typeof(VerifyEmailRequest), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] VerifyEmailRequest request)
+    {
+        var response = await Sender.Send(new MagicLinkLoginRequest { TokenId = request.Token });
         return response.MatchResponse(
             token =>
             {
                 string? client = configuration["Client:Url"];
                 Logger.LogInformation("Redirecting to client {client} with token {token}", client, token);
-                return Redirect($"{client}/dashboard?token={token}");
+                return Redirect($"{client}{request.ReturnUrl}?token={token}");
             });
     }
 
     [HttpGet("external-login/google")]
     public IActionResult InitiateGoogleLogin([FromQuery] string returnUrl = "/")
     {
+        Logger.LogInformation("Google login callback with return url {returnUrl}", returnUrl);
+
         var redirectUrl = Url.Action(nameof(GoogleLoginCallback), new { returnUrl });
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
         return Challenge(properties, GoogleDefaults.AuthenticationScheme);
@@ -72,13 +83,15 @@ public class AuthController(IConfiguration configuration, IJwtProvider jwtProvid
     [HttpGet("external-login/google-callback")]
     public async Task<IActionResult> GoogleLoginCallback(string returnUrl = "/")
     {
+        Logger.LogInformation("google-callback login callback with return url {returnUrl}", returnUrl);
+        
         var response = await Sender.Send(new ExternalLoginCallbackRequest { ReturnUrl = returnUrl });
 
         return response.MatchResponse(
             token =>
             {
                 string? client = configuration["Client:Url"];
-                return Redirect($"{client}/dashboard?token={token}");
+                return Redirect($"{client}{returnUrl}?token={token}");
             });
     }
 }

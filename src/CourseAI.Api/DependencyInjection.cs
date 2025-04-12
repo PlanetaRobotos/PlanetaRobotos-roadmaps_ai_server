@@ -41,7 +41,9 @@ public static class DependencyInjection
             builder.WithOrigins(
                     "http://localhost:3000",
                     "https://testroadmapai.vercel.app",
-                    "https://www.levenue.tech"
+                    "https://www.levenue.tech",
+                    "https://appsumo.com",
+                    "https://*.appsumo.com"
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader()

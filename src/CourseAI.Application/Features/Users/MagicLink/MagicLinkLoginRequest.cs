@@ -7,3 +7,9 @@ public class MagicLinkLoginRequest : IRequestModel<string>
 {
     public Guid TokenId { get; set; }
 }
+
+public class VerifyEmailRequest
+{
+    public Guid Token { get; set; }
+    public string? ReturnUrl { get; set; }
+}

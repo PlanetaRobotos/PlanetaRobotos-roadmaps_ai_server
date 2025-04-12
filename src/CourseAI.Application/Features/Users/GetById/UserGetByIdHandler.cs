@@ -1,4 +1,5 @@
 using CourseAI.Application.Core;
+using CourseAI.Application.Extensions;
 using CourseAI.Application.Models;
 using CourseAI.Domain.Context;
 using CourseAI.Domain.Entities.Identity;

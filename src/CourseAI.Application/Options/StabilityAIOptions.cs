@@ -7,6 +7,7 @@ namespace CourseAI.Application.Options;
 public class StabilityAIOptions
 {
     public string ApiKey { get; set; } = string.Empty;
+    public bool IsEnabled { get; set; }
     
     internal class Configuration(IConfiguration configuration) : IConfigureOptions<StabilityAIOptions>
     {

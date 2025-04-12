@@ -43,7 +43,7 @@ public class SendMagicLinkHandler(
         dbContext.EmailVerificationTokens.Add(verificationToken);
         await dbContext.SaveChangesAsync(ct);
 
-        var verificationLink = emailVerificationLinkFactory.Create(verificationToken);
+        var verificationLink = emailVerificationLinkFactory.Create(verificationToken, request.ReturnUrl);
 
         logger.LogWarning($"Sending email verification link to {user.Email}, verificationLink: {verificationLink}");
 

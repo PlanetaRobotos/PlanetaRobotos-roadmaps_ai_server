@@ -39,10 +39,12 @@ public class RoadmapsController(IContentGenerator contentGenerator, AppDbContext
     }
     
     [HttpPost]
-    [Authorize]
+    // [Authorize]
     [ProducesResponseType<RoadmapModel>(StatusCodes.Status201Created)]
     public async Task<ActionResult> Create(RoadmapCreateRequest request)
     {
+        Logger.LogInformation("Creating roadmap with title {Title}, price {Price}, isTest {IsTest}", request.Title, request.Price, request.IsTest);
+        
         var response = await Sender.Send(request);
         return response.MatchResponse(roadmap => CreatedAtAction(nameof(GetById), new { id = roadmap.Id }, roadmap));
     }

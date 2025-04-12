@@ -8,7 +8,7 @@ public class RoadmapCreateRequest
     : RoadmapModelBase, IValidatable<RoadmapCreateRequest>, IRequestModel<RoadmapModel>
 {
     public int Price { get; set; }
-    public bool WithThumbnail { get; set; } = true;
+    public bool IsTest { get; set; } = false;
     
     public void ConfigureValidator(InlineValidator<RoadmapCreateRequest> validator)
     {

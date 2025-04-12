@@ -22,7 +22,7 @@ public class UserService(
         {
             UserName = email,
             Email = email,
-            FirstName = email.ToUsername(),
+            Name = email.ToUsername(),
             EmailConfirmed = emailConfirmed
         };
 
@@ -66,18 +66,37 @@ public class UserService(
 
     public async ValueTask<OneOf<User, Error>> GetUser()
     {
-        var httpUser = httpContextAccessor.HttpContext?.User;
-        if (httpUser == null)
-            return Error.Unauthorized("User not found from httpContextAccessor");
+        try
+        {
+            var httpUser = httpContextAccessor.HttpContext?.User;
+            if (httpUser == null)
+                return Error.Unauthorized("User not found from httpContextAccessor");
 
-        var userId = httpUser.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Error.Unauthorized("User not found by ClaimTypes.NameIdentifier");
+            var userId = httpUser.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Error.Unauthorized("User not found by ClaimTypes.NameIdentifier");
 
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return Error.Unauthorized("User not found from userManager");
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return Error.Unauthorized("User not found from userManager");
 
-        return user;
+            if (user.Name == null && user.Email != null)
+            {
+                user.Name = user.Email.ToUsername();
+                var updateResult = await userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    foreach (var error in updateResult.Errors)
+                        throw new Exception($"updateResult Failed: {error.Description}");
+                }
+            }
+
+            return user;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

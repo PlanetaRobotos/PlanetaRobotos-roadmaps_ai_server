@@ -31,24 +31,12 @@ public class UsersController(UserManager<User> userManager, IUserService userSer
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Unauthorized();
-    
-        var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-            return Unauthorized();
-    
-        var userModel = new UserModel
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.FirstName,
-            EmailConfirmed = user.EmailConfirmed,
-            Bio = user.Bio,
-        };
-    
-        return Ok(userModel);
+        var userResult = await userService.GetUser();
+        
+        return userResult.Match(
+            Ok,
+            error => throw new Exception(error.Message)
+        );
     }
 
     [HttpGet("{id:long}")]

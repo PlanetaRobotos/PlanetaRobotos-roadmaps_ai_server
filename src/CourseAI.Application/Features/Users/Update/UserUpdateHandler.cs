@@ -19,7 +19,7 @@ public class UserUpdateHandler(AppDbContext dbContext, UserManager<User> userMan
             return Error.NotFound<User>();
         }
 
-        user.FirstName = request.Name;
+        user.Name = request.Name;
         user.Bio = request.Bio;
 
         var result = await userManager.UpdateAsync(user);

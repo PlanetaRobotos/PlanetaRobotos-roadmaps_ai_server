@@ -1,6 +1,7 @@
 ﻿using CourseAI.Application.Core;
 using CourseAI.Application.Models;
 using CourseAI.Application.Models.Roadmaps;
+using CourseAI.Application.Options;
 using CourseAI.Application.Services;
 using CourseAI.Core.Enums;
 using CourseAI.Core.Security;
@@ -11,6 +12,8 @@ using CourseAI.Domain.Entities.Transactions;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OneOf;
 
@@ -20,7 +23,9 @@ public class RoadmapCreateHandler(
     AppDbContext dbContext,
     IContentGenerator contentGenerator,
     UserManager<User> userManager,
-    IUserService userService)
+    IUserService userService,
+    IOptions<StabilityAIOptions> stabilityOptions,
+    ILogger<IHandler<RoadmapCreateRequest, RoadmapModel>> logger)
     : IHandler<RoadmapCreateRequest, RoadmapModel>
 {
     public async ValueTask<OneOf<RoadmapModel, Error>> Handle(RoadmapCreateRequest request, CancellationToken ct)
@@ -29,41 +34,54 @@ public class RoadmapCreateHandler(
         var coursePrice = request.Price;
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+        
+        logger.LogInformation("Inside: Creating roadmap with title {Title}, price {Price}, isTest {IsTest}", request.Title, request.Price, request.IsTest);
 
         try
         {
-            var userResult = await userService.GetUser();
-            var user = userResult.Match(
-                user => user,
-                error => throw new Exception(error.Message)
-            );
-
-            var roles = await userManager.GetRolesAsync(user);
-
-            if (!roles.Contains(Roles.creator.ToString()))
+            if (!request.IsTest)
             {
-                // Operate on tokens
-                if (user.Tokens < coursePrice)
-                    return Error.ServerError("Insufficient tokens to create the course.");
+                var userResult = await userService.GetUser();
+                var user = userResult.Match(
+                    user => user,
+                    error => throw new Exception(error.Message)
+                );
+                
+                logger.LogInformation("User found with email {Email}", user.Email);
 
-                user.Tokens -= coursePrice;
+                var roles = await userManager.GetRolesAsync(user);
 
-                var result = await userManager.UpdateAsync(user);
-                if (!result.Succeeded)
-                    return Error.ServerError("Failed to update user tokens.");
+                logger.LogInformation("User roles: {Roles}", roles);
 
-                var tokenTransaction = new TokenTransaction
+                if (!roles.Contains(Roles.creator.ToString()) && 
+                    !roles.Contains(Roles.AppSumo_1.ToString()) && 
+                    !roles.Contains(Roles.studio.ToString()))
                 {
-                    UserId = Convert.ToInt64(user.Id),
-                    Amount = -coursePrice,
-                    TransactionType = TransactionType.CourseGeneration,
-                };
+                    logger.LogInformation("User roles: {Roles}", string.Join(", ", roles));
+                    
+                    // Operate on tokens
+                    if (user.Tokens < coursePrice)
+                        return Error.ServerError("Insufficient tokens to create the course.");
 
-                dbContext.TokenTransactions.Add(tokenTransaction);
-                await dbContext.SaveChangesAsync(ct);
+                    user.Tokens -= coursePrice;
+
+                    var result = await userManager.UpdateAsync(user);
+                    if (!result.Succeeded)
+                        return Error.ServerError("Failed to update user tokens.");
+
+                    var tokenTransaction = new TokenTransaction
+                    {
+                        UserId = Convert.ToInt64(user.Id),
+                        Amount = -coursePrice,
+                        TransactionType = TransactionType.CourseGeneration,
+                    };
+
+                    dbContext.TokenTransactions.Add(tokenTransaction);
+                    await dbContext.SaveChangesAsync(ct);
+                }
             }
-
-            await transaction.CommitAsync(ct);
+            
+            logger.LogInformation("User has sufficient tokens to create the course.");
 
             // Course Generation
             dbContext.Roadmaps.Add(roadmap);
@@ -117,8 +135,10 @@ public class RoadmapCreateHandler(
 
                 await dbContext.SaveChangesAsync(ct);
             }
+            
+            logger.LogInformation("Roadmap created and visual is {isEnabled}", stabilityOptions.Value.IsEnabled);
 
-            if (request.WithThumbnail)
+            if (stabilityOptions.Value.IsEnabled)
             {
                 var thumbnailResult = await contentGenerator.GenerateImageAsync(roadmap.Title, true);
                 if (!thumbnailResult.Success)
@@ -129,6 +149,8 @@ public class RoadmapCreateHandler(
                 roadmap.ThumbnailUrl = fileName;
                 await dbContext.SaveChangesAsync(ct);
             }
+            
+            await transaction.CommitAsync(ct);
         }
         catch (Exception ex)
         {
@@ -243,11 +265,11 @@ public class RoadmapCreateHandler(
                    "resources": ["Title 1 | Description 1 | URL 1", "Title 2 | Description 2 | URL 2"],
                    "examples": []
                  },
-                 "quiz": {
+                 "quizzes": [
                    "question": "Clear, focused question testing key concept",
-                   "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-                   "correctIndex": 0
-                 }
+                   "answers": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                   "correctAnswerIndex": 0
+                 ]
                }
 
                Guidelines:
@@ -260,7 +282,7 @@ public class RoadmapCreateHandler(
                - Proper tag closing. Do not use self-closing tags and do not use <h2> with other tags. Be careful with line breaking lines, double check the format to avoid errors
                - If you use blockquote. Each should contain the complete insights/key points, not just labels
                - Include 1-2 relevant resources with titles. Format resources as: "Title | short Description | URL", all three parts required, use vertical bar (|) as separator in resources
-               - Create 1 quiz question with 4 clear options. Be careful to set the correct index as answer for correctIndex field
+               - Create 1 quiz question with 4 clear options. Be careful to set the correct index as answer for correctAnswerIndex field
                """;
     }
 

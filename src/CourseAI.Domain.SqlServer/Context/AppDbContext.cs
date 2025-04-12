@@ -1,6 +1,7 @@
 using CourseAI.Core.Enums;
 using CourseAI.Core.Security;
 using CourseAI.Domain.Entities;
+using CourseAI.Domain.Entities.AppSumo;
 using CourseAI.Domain.Entities.Categories;
 using CourseAI.Domain.Entities.Common;
 using CourseAI.Domain.Entities.Identity;
@@ -40,6 +41,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CategoryRelation> CategoryRelations { get; set; }
     public DbSet<CourseType> CourseTypes { get; set; }
     public DbSet<CourseTypeRelation> CourseTypeRelations { get; set; }
+    public DbSet<AppSumoLicense> AppSumoLicenses { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {

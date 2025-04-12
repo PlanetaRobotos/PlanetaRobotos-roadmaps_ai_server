@@ -6,5 +6,6 @@ public enum Roles
     studio,
     enterprise,
     user,
-    admin
+    admin,
+    AppSumo_1
 }

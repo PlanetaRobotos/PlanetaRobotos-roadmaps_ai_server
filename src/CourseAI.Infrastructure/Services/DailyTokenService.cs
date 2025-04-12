@@ -54,7 +54,7 @@ public class DailyTokenService(
             {
                 var roles = await userManager.GetRolesAsync(user);
 
-                if (!roles.Contains(Roles.creator.ToString()) && !roles.Contains(Roles.creator.ToString()) && roles.Contains(Roles.user.ToString()))
+                if (!roles.Contains(Roles.creator.ToString()) && !roles.Contains(Roles.AppSumo_1.ToString()) && !roles.Contains(Roles.studio.ToString()))
                 {
                     user.Tokens += TokensToAdd;
                 }

@@ -16,6 +16,7 @@ public class ExploreService : IExploreService
 
     private const string BetterYouTypeName = "BetterYou2025";
     private const string WelcomeTypeName = "Welcome";
+    private const string NewToLevenueTypeName = "NewToLevenue";
 
     public ExploreService(AppDbContext context, IDbContextFactory<AppDbContext> contextFactory)
     {
@@ -26,36 +27,46 @@ public class ExploreService : IExploreService
     public async Task<ExplorePageModel> GetExplorePageAsync()
     {
         // Create separate contexts for parallel operations
-        await using var context1 = await _contextFactory.CreateDbContextAsync();
-        await using var context2 = await _contextFactory.CreateDbContextAsync();
-        await using var context3 = await _contextFactory.CreateDbContextAsync();
-        await using var context4 = await _contextFactory.CreateDbContextAsync();
+        await using var categoriesContext = await _contextFactory.CreateDbContextAsync();
+        await using var newContext = await _contextFactory.CreateDbContextAsync();
+        await using var topContext = await _contextFactory.CreateDbContextAsync();
+        await using var betterYouContext = await _contextFactory.CreateDbContextAsync();
+        await using var newToLevenueContext = await _contextFactory.CreateDbContextAsync();
 
         // Get root categories
-        var categoriesTask = context1.Categories
+        var categoriesTask = categoriesContext.Categories
             .Where(c => !c.ParentRelations.Any()) // Root categories only
             .OrderBy(c => c.Position)
             .ProjectToType<CategorySliderModel>()
             .ToListAsync();
 
         // Get new courses
-        var newCoursesTask = context2.Roadmaps
+        var newCoursesTask = newContext.Roadmaps
             .OrderByDescending(r => r.Created)
             .Take(20) // Two rows of courses
             .ProjectToType<RoadmapModel>()
             .ToListAsync();
 
         // Get top courses
-        var topCoursesTask = context3.Roadmaps
+        var topCoursesTask = topContext.Roadmaps
             .OrderByDescending(r => r.Likes)
             .Take(10) // One row with indices
             .ProjectToType<RoadmapModel>()
             .ToListAsync();
 
         // Get "Better You" courses
-        var betterYouCoursesTask = context4.Roadmaps
+        var betterYouCoursesTask = betterYouContext.Roadmaps
             .Where(r => r.CourseTypes
                 .Any(rt => rt.Type.Name == BetterYouTypeName))
+            .OrderByDescending(r => r.Created)
+            .Take(10) // One row
+            .ProjectToType<RoadmapModel>()
+            .ToListAsync();
+        
+        // Get "New to Levenue" courses
+        var newToLevenueCoursesTask = newToLevenueContext.Roadmaps
+            .Where(r => r.CourseTypes
+                .Any(rt => rt.Type.Name == NewToLevenueTypeName))
             .OrderByDescending(r => r.Created)
             .Take(10) // One row
             .ProjectToType<RoadmapModel>()
@@ -66,14 +77,16 @@ public class ExploreService : IExploreService
             categoriesTask,
             newCoursesTask,
             topCoursesTask,
-            betterYouCoursesTask);
+            betterYouCoursesTask,
+            newToLevenueCoursesTask);
 
         return new ExplorePageModel
         {
             Categories = await categoriesTask,
             NewCourses = await newCoursesTask,
             TopCourses = await topCoursesTask,
-            BetterYouCourses = await betterYouCoursesTask
+            BetterYouCourses = await betterYouCoursesTask,
+            NewToLevenueCourses = await newToLevenueCoursesTask
         };
     }
 
